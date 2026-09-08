@@ -2,7 +2,7 @@
  * gem-avatar — deterministic character avatars from any string.
  * Single file, zero dependencies. UMD (browser global + CommonJS).
  *
- * Eight character styles: face, persona, pixel, line, geo, robot, emoji, silhouette.
+ * Eight styles: snowflake, plant, pixel, line, geo, robot, emoji, silhouette.
  * Same string always produces the same SVG. Runs entirely in the browser,
  * no network requests, no backend.
  *
@@ -159,70 +159,95 @@
     return verts;
   }
 
-  var scalePt = function (v, k) { return [50 + (v[0] - 50) * k, 50 + (v[1] - 50) * k]; };
-
   /* ================================================================
    * CHARACTER STYLES
    * ================================================================ */
 
-  /* -------- face: cartoon head with hair / eyes / mouth / blush ---- */
-  function drawFace(rng, o, ramp) {
-    var rx = rng.range("fc.rx", 34, 38), ry = rng.range("fc.ry", 32, 37);
-    var cy = 52;
-    var skin = rng.choose("fc.skin", ["main", "light", "pale"]);
+  /* -------- snowflake: six-fold symmetric crystal ------------------ */
+  function drawSnowflake(rng, o, ramp) {
     var out = "";
-    var er = rng.range("fc.er", 4, 6);
-    out += circle(50 - rx + 2, cy, er, ramp[skin]);
-    out += circle(50 + rx - 2, cy, er, ramp[skin]);
-    out += '<path d="' + roundShape(50, cy, rx, ry, 3.2) + '" fill="' + ramp[skin] + '"/>';
-    var hair = rng.int("fc.hair", 0, 3);
-    var hd = rng.range("fc.hd", 8, 15);
-    if (hair === 1) {
-      out += '<path d="' + arcCap(50, cy, rx, hd) + '" fill="' + ramp.deep + '"/>';
-    } else if (hair === 2) {
-      out += '<path d="' + arcCap(50, cy, rx, hd * 0.62) + '" fill="' + ramp.deep + '"/>';
-      for (var i = -1; i <= 1; i++) {
-        out += circle(50 + i * rx * 0.32, cy - hd * 0.55, rng.range("fc.cl" + (i + 1), 5, 9), ramp.deep);
+    var armLen = rng.range("sf.len", 30, 38);
+    var armW = rng.range("sf.w", 2.5, 4);
+    var centerR = rng.range("sf.cr", 4, 7);
+    var branchN = rng.int("sf.bn", 2, 3);
+    var branchLen = rng.range("sf.bl", 6, 11);
+    var col = ramp.light;
+    var col2 = ramp.main;
+    for (var i = 0; i < 6; i++) {
+      var a = (Math.PI / 3) * i - Math.PI / 2;
+      var ex = 50 + armLen * Math.cos(a);
+      var ey = 50 + armLen * Math.sin(a);
+      out += '<line x1="50" y1="50" x2="' + r2(ex) + '" y2="' + r2(ey) + '" stroke="' + col + '" stroke-width="' + r2(armW) + '" stroke-linecap="round"/>';
+      for (var b = 1; b <= branchN; b++) {
+        var t = b / (branchN + 1);
+        var bx = 50 + armLen * t * Math.cos(a);
+        var by = 50 + armLen * t * Math.sin(a);
+        var bl = branchLen * (1 - t * 0.3);
+        var a1 = a + Math.PI / 4, a2 = a - Math.PI / 4;
+        out += '<line x1="' + r2(bx) + '" y1="' + r2(by) + '" x2="' + r2(bx + bl * Math.cos(a1)) + '" y2="' + r2(by + bl * Math.sin(a1)) + '" stroke="' + col + '" stroke-width="' + r2(armW * 0.7) + '" stroke-linecap="round"/>';
+        out += '<line x1="' + r2(bx) + '" y1="' + r2(by) + '" x2="' + r2(bx + bl * Math.cos(a2)) + '" y2="' + r2(by + bl * Math.sin(a2)) + '" stroke="' + col + '" stroke-width="' + r2(armW * 0.7) + '" stroke-linecap="round"/>';
       }
-    } else if (hair === 3) {
-      out += '<path d="' + arcCap(50, cy, rx * 0.98, hd * 0.8) + '" fill="' + ramp.deep + '"/>';
-      out += '<rect x="' + r2(50 - rx * 0.72) + '" y="' + r2(cy - hd * 0.8 - 3.5) + '" width="' + r2(rx * 1.44) + '" height="5.5" rx="2.75" fill="' + ramp.ink + '"/>';
+      out += circle(ex, ey, armW * 0.9, col2);
     }
-    var gap = rng.range("fc.gap", 9, 13);
-    var ewr = rng.range("fc.ew", 2.6, 4), ehr = rng.range("fc.eh", 3.5, 5.5);
-    var ey = cy - 2;
-    out += '<ellipse cx="' + r2(50 - gap) + '" cy="' + r2(ey) + '" rx="' + r2(ewr) + '" ry="' + r2(ehr) + '" fill="' + ramp.ink + '"/>';
-    out += '<ellipse cx="' + r2(50 + gap) + '" cy="' + r2(ey) + '" rx="' + r2(ewr) + '" ry="' + r2(ehr) + '" fill="' + ramp.ink + '"/>';
-    var my = cy + 8, mw = rng.range("fc.mw", 3.5, 5.5), md = rng.range("fc.md", 1.5, 4);
-    var m = rng.choose("fc.m", ["smile", "flat", "frown"]);
-    var d = m === "flat" ? "M" + r2(50 - mw) + " " + r2(my) + "L" + r2(50 + mw) + " " + r2(my)
-      : m === "smile" ? "M" + r2(50 - mw) + " " + r2(my) + "Q" + r2(50) + " " + r2(my + md) + " " + r2(50 + mw) + " " + r2(my)
-      : "M" + r2(50 - mw) + " " + r2(my + md) + "Q" + r2(50) + " " + r2(my) + " " + r2(50 + mw) + " " + r2(my + md);
-    out += '<path d="' + d + '" fill="none" stroke="' + ramp.ink + '" stroke-width="2.2" stroke-linecap="round"/>';
-    var br = rng.range("fc.br", 3, 5);
-    out += circle(50 - gap - 4, cy + 5, br, ramp.deep, 0.35);
-    out += circle(50 + gap + 4, cy + 5, br, ramp.deep, 0.35);
+    out += circle(50, 50, centerR, col2);
+    if (rng.yes("sf.spark", 0.6)) {
+      for (var s = 0; s < 3; s++) {
+        var sa = rng.range("sf.sa" + s, 0, Math.PI * 2);
+        var sr = rng.range("sf.sr" + s, 12, 28);
+        out += circle(50 + sr * Math.cos(sa), 50 + sr * Math.sin(sa), 1.5, ramp.pale, 0.8);
+      }
+    }
     return out;
   }
 
-  /* -------- persona: flat half-body portrait ------------------------ */
-  function drawPersona(rng, o, ramp) {
-    var shirt = rng.choose("ps.shirt", ["main", "deep"]);
-    var skin = rng.choose("ps.skin", ["light", "pale"]);
-    var bodyTop = 68;
-    var sw = rng.range("ps.sw", 26, 34);
+  /* -------- plant: potted cactus / leaf / sprout ------------------- */
+  function drawPlant(rng, o, ramp) {
     var out = "";
-    out += '<path d="M' + r2(50 - sw) + ' 100 C' + r2(50 - sw) + ' ' + r2(bodyTop) + ' ' + r2(50 + sw) + ' ' + r2(bodyTop) + ' ' + r2(50 + sw) + ' 100 Z" fill="' + ramp[shirt] + '"/>';
-    out += '<rect x="45" y="' + r2(bodyTop - 10) + '" width="10" height="16" rx="3" fill="' + ramp[skin] + '"/>';
-    var hr = rng.range("ps.hr", 19, 23);
-    var hcy = bodyTop - 8 - hr;
-    out += '<circle cx="50" cy="' + r2(hcy) + '" r="' + r2(hr) + '" fill="' + ramp[skin] + '"/>';
-    var hd = rng.range("ps.hd", 7, 12);
-    out += '<path d="' + arcCap(50, hcy, hr, hd) + '" fill="' + ramp.deep + '"/>';
-    var gap = rng.range("ps.gap", 6, 9);
-    out += circle(50 - gap, hcy + 1, 2.6, ramp.ink);
-    out += circle(50 + gap, hcy + 1, 2.6, ramp.ink);
-    out += '<path d="M' + r2(50 - 3) + ' ' + r2(hcy + 9) + 'Q' + r2(50) + ' ' + r2(hcy + 11) + ' ' + r2(50 + 3) + ' ' + r2(hcy + 9) + '" fill="none" stroke="' + ramp.ink + '" stroke-width="2" stroke-linecap="round"/>';
+    var potCol = ramp.deep;
+    var potTop = 72, potBot = 92;
+    var potW = rng.range("pl.pw", 22, 28);
+    out += '<path d="M' + r2(50 - potW) + ' ' + r2(potTop) +
+      ' L' + r2(50 + potW) + ' ' + r2(potTop) +
+      ' L' + r2(50 + potW * 0.8) + ' ' + r2(potBot) +
+      ' L' + r2(50 - potW * 0.8) + ' ' + r2(potBot) + ' Z" fill="' + potCol + '"/>';
+    out += '<rect x="' + r2(50 - potW - 2) + '" y="' + r2(potTop - 4) + '" width="' + r2(potW * 2 + 4) + '" height="5" rx="2" fill="' + ramp.ink + '"/>';
+    var type = rng.choose("pl.type", ["cactus", "leaf", "sprout"]);
+    var green = ramp.main;
+    var greenLight = ramp.light;
+    if (type === "cactus") {
+      var cw = rng.range("pl.cw", 10, 14);
+      var ch = rng.range("pl.ch", 28, 36);
+      out += '<rect x="' + r2(50 - cw / 2) + '" y="' + r2(potTop - ch) + '" width="' + r2(cw) + '" height="' + r2(ch) + '" rx="' + r2(cw / 2) + '" fill="' + green + '"/>';
+      if (rng.yes("pl.armL", 0.6)) {
+        var al = rng.range("pl.al", 8, 14);
+        out += '<rect x="' + r2(50 - cw / 2 - al + 2) + '" y="' + r2(potTop - ch * 0.6) + '" width="' + r2(al) + '" height="' + r2(cw * 0.7) + '" rx="' + r2(cw * 0.35) + '" fill="' + green + '"/>';
+      }
+      if (rng.yes("pl.armR", 0.6)) {
+        var ar = rng.range("pl.ar", 8, 14);
+        out += '<rect x="' + r2(50 + cw / 2 - 2) + '" y="' + r2(potTop - ch * 0.5) + '" width="' + r2(ar) + '" height="' + r2(cw * 0.7) + '" rx="' + r2(cw * 0.35) + '" fill="' + green + '"/>';
+      }
+      if (rng.yes("pl.flower", 0.5)) {
+        out += circle(50, potTop - ch - 2, 4, ramp.pale);
+        out += circle(50, potTop - ch - 2, 2, ramp.deep);
+      }
+      out += circle(50 - 4, potTop - ch * 0.5, 1.8, ramp.ink);
+      out += circle(50 + 4, potTop - ch * 0.5, 1.8, ramp.ink);
+      out += '<path d="M' + r2(50 - 2.5) + ' ' + r2(potTop - ch * 0.5 + 5) + 'Q50 ' + r2(potTop - ch * 0.5 + 7) + ' ' + r2(50 + 2.5) + ' ' + r2(potTop - ch * 0.5 + 5) + '" fill="none" stroke="' + ramp.ink + '" stroke-width="1.5" stroke-linecap="round"/>';
+    } else if (type === "leaf") {
+      var lh = rng.range("pl.lh", 30, 40);
+      var lw = rng.range("pl.lw", 16, 22);
+      var ly = potTop - lh / 2;
+      var rot = rng.nudge("pl.rot", 8);
+      out += '<ellipse cx="50" cy="' + r2(ly) + '" rx="' + r2(lw) + '" ry="' + r2(lh / 2) + '" fill="' + green + '" transform="rotate(' + r2(rot) + ' 50 ' + r2(ly) + ')"/>';
+      out += '<line x1="50" y1="' + r2(ly - lh / 2 + 4) + '" x2="50" y2="' + r2(ly + lh / 2 - 4) + '" stroke="' + greenLight + '" stroke-width="1.5"/>';
+      if (rng.yes("pl.sleaf", 0.5)) {
+        out += '<ellipse cx="' + r2(50 - lw * 0.7) + '" cy="' + r2(ly + 5) + '" rx="' + r2(lw * 0.5) + '" ry="' + r2(lh * 0.3) + '" fill="' + green + '" transform="rotate(-25 ' + r2(50 - lw * 0.7) + ' ' + r2(ly + 5) + ')"/>';
+      }
+    } else {
+      out += '<rect x="48.5" y="' + r2(potTop - 20) + '" width="3" height="20" rx="1.5" fill="' + green + '"/>';
+      out += '<ellipse cx="' + r2(50 - 8) + '" cy="' + r2(potTop - 22) + '" rx="9" ry="5" fill="' + green + '" transform="rotate(-30 ' + r2(50 - 8) + ' ' + r2(potTop - 22) + ')"/>';
+      out += '<ellipse cx="' + r2(50 + 8) + '" cy="' + r2(potTop - 24) + '" rx="9" ry="5" fill="' + green + '" transform="rotate(30 ' + r2(50 + 8) + ' ' + r2(potTop - 24) + ')"/>';
+    }
     return out;
   }
 
@@ -434,20 +459,19 @@
 
   /* ---------------- registry & main ---------------- */
 
-  var STYLES = ["face", "persona", "pixel", "line", "geo", "robot", "emoji", "silhouette"];
+  var STYLES = ["snowflake", "plant", "pixel", "line", "geo", "robot", "emoji", "silhouette"];
 
   function gemAvatar(seed, opts) {
     opts = opts || {};
-    var o = opts;
-    var rng = makeRng(seed, o.overrides);
-    var style = o.style;
-    if (STYLES.indexOf(style) < 0) style = style === "auto" ? rng.choose("style", STYLES) : "face";
-    var h = o.hue == null ? rng.range("hue", 0, 360) : o.hue;
-    var dark = !!o.dark;
+    var rng = makeRng(seed, opts.overrides);
+    var style = opts.style;
+    if (STYLES.indexOf(style) < 0) style = style === "auto" ? rng.choose("style", STYLES) : "snowflake";
+    var h = opts.hue == null ? rng.range("hue", 0, 360) : opts.hue;
+    var dark = !!opts.dark;
     var ramp = colorRamp(h, dark, rng);
 
     var plate = "";
-    var bg = o.background == null ? "none" : o.background;
+    var bg = opts.background == null ? "none" : opts.background;
     if (bg === "circle" || bg === "square" || bg === "squircle") {
       var bgPath = bg === "square"
         ? "M0 0H100V100H0Z"
@@ -456,19 +480,19 @@
     }
 
     var body =
-      style === "face" ? drawFace(rng, o, ramp, h) :
-      style === "persona" ? drawPersona(rng, o, ramp) :
-      style === "pixel" ? drawPixelFace(rng, o, ramp, h) :
-      style === "line" ? drawLine(rng, o, ramp) :
-      style === "geo" ? drawGeo(rng, o, ramp, h) :
-      style === "robot" ? drawRobot(rng, o, ramp) :
-      style === "emoji" ? drawEmoji(rng, o, ramp, h) :
-      drawSilhouette(rng, o, ramp);
+      style === "snowflake" ? drawSnowflake(rng, opts, ramp) :
+      style === "plant" ? drawPlant(rng, opts, ramp) :
+      style === "pixel" ? drawPixelFace(rng, opts, ramp, h) :
+      style === "line" ? drawLine(rng, opts, ramp) :
+      style === "geo" ? drawGeo(rng, opts, ramp, h) :
+      style === "robot" ? drawRobot(rng, opts, ramp) :
+      style === "emoji" ? drawEmoji(rng, opts, ramp, h) :
+      drawSilhouette(rng, opts, ramp);
 
-    var dim = o.size ? ' width="' + o.size + '" height="' + o.size + '"' : "";
+    var dim = opts.size ? ' width="' + opts.size + '" height="' + opts.size + '"' : "";
     var title = "";
-    if (o.title) {
-      title = "<title>" + String(o.title).replace(/[&<>]/g, function (c) {
+    if (opts.title) {
+      title = "<title>" + String(opts.title).replace(/[&<>]/g, function (c) {
         return c === "&" ? "&amp;" : c === "<" ? "&lt;" : "&gt;";
       }) + "</title>";
     }
@@ -482,7 +506,7 @@
   gemAvatar.STYLES = STYLES;
   gemAvatar._hue = function (seed) { return makeRng(seed).range("hue", 0, 360); };
   gemAvatar._hex = function (seed) { return ("0000000" + hashString(normalize(seed)).toString(16)).slice(-8); };
-  gemAvatar.version = "0.5.0";
+  gemAvatar.version = "0.5.1";
 
   return gemAvatar;
 });
