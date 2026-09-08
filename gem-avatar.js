@@ -36,6 +36,15 @@
     return h;
   }
 
+  // Trait keys are compile-time constants drawn from a small fixed set, so
+  // cache their hashes: raw() only mixes the cached value with the per-seed
+  // base, skipping the string walk on every derived value.
+  var keyHashCache = Object.create(null);
+  function hashKey(key) {
+    var v = keyHashCache[key];
+    return v === undefined ? (keyHashCache[key] = hashString(key)) : v;
+  }
+
   /* ---------------- random source ---------------- */
 
   // One independent [0,1) float per key, derived from the seed hash and the
@@ -45,7 +54,7 @@
     var base = hashString(normalize(seed));
 
     function raw(key) {
-      var x = (base ^ hashString(key)) >>> 0;
+      var x = (base ^ hashKey(key)) >>> 0;
       x = Math.imul(x ^ (x >>> 15), 0x9e3779cd);
       x = Math.imul(x ^ (x >>> 13), 0xbb67ae85);
       x = (x ^ (x >>> 16)) >>> 0;
@@ -85,12 +94,13 @@
     else if (h < 240) { g = x; b = c; }
     else if (h < 300) { r = x; b = c; }
     else { r = c; b = x; }
-    var f = function (v) {
-      var n = Math.round((v + m) * 255);
-      n = n < 0 ? 0 : n > 255 ? 255 : n;
-      return (n < 16 ? "0" : "") + n.toString(16);
-    };
-    return "#" + f(r) + f(g) + f(b);
+    return "#" + hexByte(r, m) + hexByte(g, m) + hexByte(b, m);
+  }
+
+  function hexByte(v, m) {
+    var n = Math.round((v + m) * 255);
+    n = n < 0 ? 0 : n > 255 ? 255 : n;
+    return (n < 16 ? "0" : "") + n.toString(16);
   }
 
   // Five authored steps from one hue, with per-name micro-jitter on hue,
@@ -506,7 +516,7 @@
   gemAvatar.STYLES = STYLES;
   gemAvatar._hue = function (seed) { return makeRng(seed).range("hue", 0, 360); };
   gemAvatar._hex = function (seed) { return ("0000000" + hashString(normalize(seed)).toString(16)).slice(-8); };
-  gemAvatar.version = "0.5.1";
+  gemAvatar.version = "0.5.2";
 
   return gemAvatar;
 });
