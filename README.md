@@ -186,7 +186,8 @@ gemAvatar("alain", { style: "plant", overrides: { "pl.type": 0.5 } })
 
 - 库体积（gzip，含全部注释）：**约 6.8 KB**，8 种风格打包。
 - 单颗头像 gzip 约 **0.3–0.5 KB**。
-- 生成耗时约 **0.03–0.05 ms/次**（M 系列 Mac 浏览器）。
+- 生成耗时约 **5 µs/次**（MacBook Air M4，Node / V8 实测，混合 8 风格）。
+- 性能优化 v0.5.2：trait key 哈希缓存 + 十六进制转换提级，输出与旧版字节级一致。
 
 ## 确定性保证
 

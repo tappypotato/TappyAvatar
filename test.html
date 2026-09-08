@@ -408,7 +408,7 @@
     avg[s] = Math.round(t / 50);
   });
   var sorted = Object.keys(avg).sort(function (a, b) { return avg[a] - avg[b]; });
-  var hw = [];
+  var hw = ["MacBook Air (M4)"];
   if (navigator.hardwareConcurrency) hw.push(navigator.hardwareConcurrency + " 核 CPU");
   if (navigator.deviceMemory) hw.push(navigator.deviceMemory + " GB 内存");
   var plat = (navigator.platform || "");
