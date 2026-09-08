@@ -1,5 +1,7 @@
 # TappyAvatar (English)
 
+[![npm version](https://img.shields.io/npm/v/tappy-avatar)](https://www.npmjs.com/package/tappy-avatar) [![npm downloads](https://img.shields.io/npm/dm/tappy-avatar)](https://www.npmjs.com/package/tappy-avatar)
+
 > [English](README.en.md) · [中文](README.md)
 
 > Same string, same avatar — forever.
@@ -40,6 +42,18 @@ one name, another style  →  same seed, 8 different looks
 > (enable Pages on the `main` branch in repo Settings first)
 
 ## Quick start
+
+### Install
+
+```bash
+npm install tappy-avatar
+```
+
+```js
+const tappyAvatar = require("tappy-avatar");
+```
+
+### Standalone (single file)
 
 Only one file is needed:
 

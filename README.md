@@ -1,5 +1,7 @@
 # TappyAvatar
 
+[![npm version](https://img.shields.io/npm/v/tappy-avatar)](https://www.npmjs.com/package/tappy-avatar) [![npm downloads](https://img.shields.io/npm/dm/tappy-avatar)](https://www.npmjs.com/package/tappy-avatar)
+
 > [English](README.en.md) · [中文](README.md)
 
 > 同一个字符串，永远渲染同一个头像。
@@ -37,6 +39,18 @@ TappyAvatar 是一个**确定性的头像生成器**：把任意用户名、邮�
 > （首次使用请在仓库 Settings → Pages 启用 main 分支，链接即可访问）
 
 ## 快速开始
+
+### npm 安装
+
+```bash
+npm install tappy-avatar
+```
+
+```js
+const tappyAvatar = require("tappy-avatar");
+```
+
+### 直接引入（单文件）
 
 仓库里只需要引入这一个文件：
 
