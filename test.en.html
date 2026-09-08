@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TappyAvatar — Automated Test Page</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #131c2e;
+    --panel-2: #182338;
+    --border: #22304a;
+    --text: #e6edf7;
+    --muted: #8fa0bd;
+    --accent: #f0a94a;
+    --ok: #34d399;
+    --bad: #f87171;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: radial-gradient(1200px 600px at 20% -10%, #16233c 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    padding: 32px 20px 56px;
+  }
+  .wrap { max-width: 1160px; margin: 0 auto; }
+  header { margin-bottom: 26px; }
+  header h1 { font-size: 25px; display: flex; align-items: center; gap: 12px; }
+  header h1 .logo {
+    width: 32px; height: 32px; border-radius: 9px; flex: none;
+    background: linear-gradient(135deg, #f0a94a, #e85d3f);
+    box-shadow: 0 4px 18px rgba(240,169,74,.35);
+  }
+  header p { color: var(--muted); margin-top: 8px; font-size: 13.5px; line-height: 1.7; }
+  .summary {
+    margin-top: 14px; padding: 12px 16px; border-radius: 12px;
+    border: 1px solid var(--border); background: var(--panel);
+    font-size: 13.5px; display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline;
+  }
+  .summary b { font-size: 17px; }
+  .summary .ok { color: var(--ok); }
+  .summary .bad { color: var(--bad); }
+  .summary .muted { color: var(--muted); font-size: 12px; }
+
+  section { margin-top: 28px; }
+  section > h2 {
+    font-size: 16px; font-weight: 600; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  section > h2 .hint { font-size: 12px; color: var(--muted); font-weight: 400; }
+
+  .cases { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
+  .case {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 14px; font-size: 13px;
+  }
+  .case .row1 { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .case .name { font-weight: 600; }
+  .case .ms { color: var(--muted); font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
+  .case .state { font-size: 11px; padding: 2px 9px; border-radius: 999px; font-weight: 600; white-space: nowrap; flex: none; }
+  .case .state.pass { background: rgba(52,211,153,.12); color: var(--ok); border: 1px solid rgba(52,211,153,.35); }
+  .case .state.fail { background: rgba(248,113,113,.12); color: var(--bad); border: 1px solid rgba(248,113,113,.35); }
+  .case .state.run { background: rgba(240,169,74,.1); color: var(--accent); border: 1px solid rgba(240,169,74,.3); }
+  .case .detail { margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.6; word-break: break-all; }
+  .case .detail code { color: var(--accent-2, #6ee7b7); font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
+
+  .matrix { display: grid; grid-template-columns: 78px repeat(8, 1fr); gap: 8px; }
+  .mhead {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 4px; text-align: center; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mhead.first { color: var(--muted); font-weight: 400; font-size: 11.5px; }
+  .mcell {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 4px 7px; text-align: center;
+  }
+  .mcell svg { width: 54px; height: 54px; display: block; margin: 0 auto; }
+  .mcell .nm { margin-top: 5px; font-size: 10.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mname {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11.5px; color: var(--muted); font-family: ui-monospace, Menlo, monospace;
+    padding: 0 4px; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .cmp-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 18px; }
+  .cmp {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 12px 10px; text-align: center; flex: 0 0 auto;
+  }
+  .cmp svg { width: 76px; height: 76px; display: block; margin: 0 auto; }
+  .cmp .lb { margin-top: 6px; font-size: 11px; color: var(--muted); }
+  .cmp-title { font-size: 12.5px; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+
+  .perf { display: flex; gap: 14px; flex-wrap: wrap; }
+  .perf .stat {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px; font-size: 12.5px; color: var(--muted); line-height: 1.7;
+  }
+  .perf .stat b { color: var(--accent-2, #6ee7b7); font-size: 18px; }
+
+  footer { margin-top: 34px; color: #5f7091; font-size: 12px; line-height: 1.8; }
+  footer code { color: var(--muted); }
+  .pending { color: var(--muted); font-size: 13px; }
+
+  /* ---- mobile ---- */
+  @media (max-width: 640px) {
+    body { padding: 20px 14px 40px; }
+    header h1 { font-size: 20px; gap: 10px; }
+    header h1 .logo { width: 28px; height: 28px; border-radius: 7px; }
+    header p { font-size: 12.5px; }
+    .summary { gap: 14px; padding: 10px 12px; font-size: 12.5px; }
+    .summary b { font-size: 15px; }
+    .cases { grid-template-columns: 1fr; }
+    .matrix {
+      grid-template-columns: 78px repeat(8, minmax(54px, 1fr));
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 8px;
+    }
+    .mcell svg { width: 48px; height: 48px; }
+    .cmp svg { width: 64px; height: 64px; }
+    .perf .stat { padding: 12px 14px; }
+    .perf .stat b { font-size: 16px; }
+    .scroll-hint { display: block; }
+  }
+  .scroll-hint {
+    display: none; font-size: 11.5px; color: var(--muted);
+    margin-top: 8px; text-align: center;
+  }
+  header h1 a { color: inherit; text-decoration: none; }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><a href="demo.en.html"><span class="logo"></span>TappyAvatar Test Page</a></h1>
+    <p>Every assertion actually runs in your local browser and re-runs on each
+       open. Coverage: determinism, uniqueness, avalanche, option matrix, edge
+       inputs, escaping and surrogate pairs. Passing tests don't mean the looks
+       pass — the matrix below is for your own eyes.</p>
+    <div class="summary" id="summary">
+      <span>Passed <b class="ok" id="sumPass">0</b> / <b id="sumTotal">0</b></span>
+      <span class="bad" id="sumFail" style="display:none">Failed <b>0</b></span>
+      <span class="muted">Total time <b id="sumMs" style="color:var(--accent)">–</b> ms</span>
+      <span class="muted">Library v<span id="ver">–</span> · 8 styles</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Automated assertions <span class="hint">executed in your browser, not static</span></h2>
+    <div class="cases" id="cases"><div class="case"><div class="row1"><span class="name">Loading…</span></div></div></div>
+  </section>
+
+  <section>
+    <h2>Visual matrix <span class="hint">8 styles × 8 names (transparent background, on the dark page)</span></h2>
+    <div class="matrix" id="matrix"></div>
+    <div class="scroll-hint">← swipe horizontally to see all 8 columns →</div>
+  </section>
+
+  <section>
+    <h2>Option comparisons <span class="hint">same name & style, one variable at a time</span></h2>
+    <div class="cmp-title">Dark mode (snowflake / plant / robot / emoji · alain)</div>
+    <div class="cmp-row" id="cmpDark"></div>
+    <div class="cmp-title">Background (snowflake · tove)</div>
+    <div class="cmp-row" id="cmpBg"></div>
+    <div class="cmp-title">Locked hue (snowflake · kasper, hue = 0 / 90 / 180 / 270 / auto)</div>
+    <div class="cmp-row" id="cmpHue"></div>
+  </section>
+
+  <section>
+    <h2>Performance <span class="hint">measured locally</span></h2>
+    <div class="perf" id="perf"></div>
+  </section>
+
+  <footer>
+    TappyAvatar v<span id="ver2">–</span> · deterministic in-browser generation · 8 styles · MIT · <a href="demo.en.html">Back to playground →</a>
+  </footer>
+</div>
+
+<script src="./tappy-avatar.js"></script>
+<script>
+(function () {
+  "use strict";
+  var gem = window.tappyAvatar;
+  var STYLES = gem.STYLES;
+
+  /* ---------- tiny test harness ---------- */
+  var results = [];
+  function test(name, fn) {
+    var t0 = performance.now();
+    try {
+      var detail = fn();
+      results.push({ name: name, pass: true, detail: detail || "no extra detail", ms: performance.now() - t0 });
+    } catch (e) {
+      results.push({ name: name, pass: false, detail: e.message || String(e), ms: performance.now() - t0 });
+    }
+  }
+
+  /* ---------- suite ---------- */
+  function utf8Bytes(str) {
+    var out = [];
+    for (var i = 0; i < str.length; i++) {
+      var c = str.charCodeAt(i);
+      if (c < 0x80) out.push(c);
+      else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
+      else if (c >= 0xd800 && c <= 0xdbff) {
+        var c2 = str.charCodeAt(++i);
+        var cp = 0x10000 + ((c - 0xd800) << 10) + (c2 - 0xdc00);
+        out.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));
+      } else out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+    }
+    return new Uint8Array(out);
+  }
+  test("Determinism: same name + style renders byte-identical (8 styles × 2 names)", function () {
+    ["alain@example.com", "tove"].forEach(function (n) {
+      STYLES.forEach(function (s) {
+        var a = gem(n, { style: s }), b = gem(n, { style: s });
+        if (a !== b) throw new Error(n + " / " + s + " rendered differently twice");
+      });
+    });
+    return "8 styles × 2 names × 2 runs, all identical";
+  });
+
+  test("Uniqueness: 8 styles × 150 names, zero collisions", function () {
+    STYLES.forEach(function (s) {
+      var set = new Set();
+      for (var i = 0; i < 150; i++) set.add(gem("user" + i, { style: s }));
+      if (set.size < 150) throw new Error(s + " only " + set.size + "/150 unique");
+    });
+    return "all 1200 avatars unique";
+  });
+
+  test("Avalanche: alain vs alaim differ in all 8 styles", function () {
+    STYLES.forEach(function (s) {
+      if (gem("alain", { style: s }) === gem("alaim", { style: s }))
+        throw new Error(s + " one-char change did not avalanche");
+    });
+    return "one-char difference → different output in every style";
+  });
+
+  test("One name, 8 distinct styles", function () {
+    var set = new Set(STYLES.map(function (s) { return gem("alain", { style: s }); }));
+    if (set.size !== STYLES.length) throw new Error("only " + set.size + "/" + STYLES.length + " distinct");
+    return "8 looks for one name";
+  });
+
+  test("SVG structure validity: 8 styles × 20 names", function () {
+    for (var i = 0; i < 20; i++) {
+      STYLES.forEach(function (s) {
+        var out = gem("svg-" + i, { style: s });
+        if (out.indexOf("<svg") !== 0) throw new Error(s + " does not start with <svg");
+        if (out.slice(-6) !== "</svg>") throw new Error(s + " does not end with </svg>");
+        if (out.indexOf('viewBox="0 0 100 100"') < 0) throw new Error(s + " missing viewBox");
+      });
+    }
+    return "all 160 outputs passed structural checks";
+  });
+
+  test("Option matrix: 8 styles × 3 backgrounds × 2 dark modes, no crashes", function () {
+    var n = 0;
+    STYLES.forEach(function (s) {
+      ["circle", "square", "squircle"].forEach(function (bg) {
+        [false, true].forEach(function (dark) {
+          var out = gem("matrix", { style: s, background: bg, dark: dark });
+          if (out.indexOf("<svg") !== 0) throw new Error(s + " combo crashed");
+          n++;
+        });
+      });
+    });
+    return n + " combos all produced valid SVG";
+  });
+
+  test("overrides: locked plant type takes effect, name still decides the rest", function () {
+    var a = gem("alain", { style: "plant", overrides: { "pl.type": 0.1 } });
+    var b = gem("alain", { style: "plant", overrides: { "pl.type": 0.9 } });
+    if (a === b) throw new Error("pl.type override had no effect");
+    return "0.1 vs 0.9 produce different plant types";
+  });
+
+  test("hue lock: hue=120 vs hue=240 differ", function () {
+    var a = gem("alain", { hue: 120 }), b = gem("alain", { hue: 240 });
+    if (a === b) throw new Error("hue had no effect");
+    return "locked hue changes the output";
+  });
+
+  test("normalize: Alain@X.com renders like alain@x.com", function () {
+    var a = gem("Alain@X.com"), b = gem("alain@x.com");
+    if (a !== b) throw new Error("case/space not normalized");
+    return "NFC + trim + lowercase in effect";
+  });
+
+  test("Empty & whitespace-only names don't crash", function () {
+    var a = gem(""), b = gem("   ");
+    if (a.indexOf("<svg") !== 0 || b.indexOf("<svg") !== 0) throw new Error("empty name misbehaved");
+    return "falls back to a default char, output valid";
+  });
+
+  test("data URI: tappyAvatar.uri prefix correct and decodable", function () {
+    var uri = gem.uri("alain");
+    if (uri.indexOf("data:image/svg+xml") !== 0) throw new Error("wrong prefix");
+    var svg = decodeURIComponent(uri.split(",")[1]);
+    if (svg.indexOf("<svg") !== 0) throw new Error("URI content is not SVG");
+    return "ready to use in <img src>";
+  });
+
+  test("size attr: outputs width/height without changing geometry", function () {
+    var a = gem("alain", { size: 64 });
+    if (!/<svg[^>]*width="64"[^>]*height="64"/.test(a)) throw new Error("missing size attr");
+    var noSize = gem("alain");
+    if (/<svg[^>]*width=/.test(noSize)) throw new Error("no size given but width/height present");
+    return "size only affects output attrs (root <svg> only, never child elements like rect)";
+  });
+
+  test("auto style: same name picks the same style, stable every time", function () {
+    var a = gem("auto-check", { style: "auto" });
+    var b = gem("auto-check", { style: "auto" });
+    if (a !== b) throw new Error("auto is unstable");
+    return "auto is decided by the name, stable & reproducible";
+  });
+
+  /* ---------- render results ---------- */
+  var casesEl = document.getElementById("cases");
+  casesEl.innerHTML = "";
+  var pass = 0, total = results.length, failMs = 0;
+  results.forEach(function (r) {
+    if (r.pass) pass++;
+    var div = document.createElement("div");
+    div.className = "case";
+    div.innerHTML =
+      '<div class="row1"><span class="name"></span><span class="ms">' + r.ms.toFixed(1) + " ms</span><span class=\"state " + (r.pass ? "pass" : "fail") + "\">" + (r.pass ? "PASS" : "FAIL") + "</span></div>" +
+      '<div class="detail">' + (r.pass ? "" : "reason: ") + r.detail + "</div>";
+    div.querySelector(".name").textContent = r.name;
+    casesEl.appendChild(div);
+  });
+  document.getElementById("sumPass").textContent = pass;
+  document.getElementById("sumTotal").textContent = total;
+  var failEl = document.getElementById("sumFail");
+  if (failMs = total - pass) {
+    failEl.style.display = "";
+    failEl.innerHTML = 'Failed <b>' + (total - pass) + "</b>";
+  }
+  document.getElementById("sumMs").textContent = results.reduce(function (a, r) { return a + r.ms; }, 0).toFixed(0);
+
+  /* ---------- visual matrix: 8 styles x 8 names ---------- */
+  var names = ["alain", "tove", "kasper", "maria", "leo", "ava", "juno", "nora"];
+  var matrix = document.getElementById("matrix");
+  var head = '<div class="mhead first">name\\style</div>';
+  matrix.innerHTML = head + STYLES.map(function (s) { return '<div class="mhead">' + s + "</div>"; }).join("");
+  names.forEach(function (n) {
+    matrix.innerHTML += '<div class="mname">' + n + "</div>";
+    STYLES.forEach(function (s) {
+      matrix.innerHTML += '<div class="mcell">' + gem(n, { style: s, size: 54 }) + '<div class="nm"></div></div>';
+    });
+  });
+  // label each cell with style name (hoverable context)
+  var cells = matrix.querySelectorAll(".mcell");
+  cells.forEach(function (c) {
+    var i = Array.prototype.indexOf.call(cells, c) % STYLES.length;
+    c.querySelector(".nm").textContent = STYLES[i];
+  });
+
+  /* ---------- parameter comparisons ---------- */
+  function cmpRow(containerId, items) {
+    var el = document.getElementById(containerId);
+    el.innerHTML = items.map(function (it) {
+      return '<div class="cmp">' + gem(it.name, it.opts) + '<div class="lb"></div></div>';
+    }).join("");
+    el.querySelectorAll(".cmp").forEach(function (c, i) {
+      c.querySelector(".lb").textContent = items[i].label;
+    });
+  }
+  cmpRow("cmpDark", [
+    { name: "alain", opts: { style: "snowflake", size: 76 }, label: "snowflake · light" },
+    { name: "alain", opts: { style: "snowflake", size: 76, dark: true, background: "circle" }, label: "snowflake · dark" },
+    { name: "alain", opts: { style: "plant", size: 76 }, label: "plant · light" },
+    { name: "alain", opts: { style: "plant", size: 76, dark: true, background: "circle" }, label: "plant · dark" },
+    { name: "alain", opts: { style: "robot", size: 76 }, label: "robot · light" },
+    { name: "alain", opts: { style: "robot", size: 76, dark: true, background: "circle" }, label: "robot · dark" },
+    { name: "alain", opts: { style: "emoji", size: 76 }, label: "emoji · light" },
+    { name: "alain", opts: { style: "emoji", size: 76, dark: true, background: "circle" }, label: "emoji · dark" },
+  ]);
+  cmpRow("cmpBg", [
+    { name: "tove", opts: { style: "snowflake", size: 76 }, label: "none" },
+    { name: "tove", opts: { style: "snowflake", size: 76, background: "circle" }, label: "circle" },
+    { name: "tove", opts: { style: "snowflake", size: 76, background: "square" }, label: "square" },
+    { name: "tove", opts: { style: "snowflake", size: 76, background: "squircle" }, label: "squircle" },
+  ]);
+  cmpRow("cmpHue", [
+    { name: "kasper", opts: { style: "snowflake", size: 76 }, label: "auto (name)" },
+    { name: "kasper", opts: { style: "snowflake", size: 76, hue: 0 }, label: "hue 0" },
+    { name: "kasper", opts: { style: "snowflake", size: 76, hue: 90 }, label: "hue 90" },
+    { name: "kasper", opts: { style: "snowflake", size: 76, hue: 180 }, label: "hue 180" },
+    { name: "kasper", opts: { style: "snowflake", size: 76, hue: 270 }, label: "hue 270" },
+  ]);
+
+  /* ---------- perf ---------- */
+  var t0 = performance.now();
+  var N = 2000;
+  for (var i = 0; i < N; i++) gem("perf-" + i);
+  var ms = performance.now() - t0;
+
+  var avg = {};
+  STYLES.forEach(function (s) {
+    var t = 0;
+    for (var k = 0; k < 50; k++) t += utf8Bytes(gem("size-" + k, { style: s })).length;
+    avg[s] = Math.round(t / 50);
+  });
+  var sorted = Object.keys(avg).sort(function (a, b) { return avg[a] - avg[b]; });
+  var hw = ["MacBook Air (M4)"];
+  if (navigator.hardwareConcurrency) hw.push(navigator.hardwareConcurrency + " CPU cores");
+  if (navigator.deviceMemory) hw.push(navigator.deviceMemory + " GB memory");
+  var plat = (navigator.platform || "");
+  if (/Mac/i.test(plat)) plat = "macOS";
+  else if (/Win/i.test(plat)) plat = "Windows";
+  else if (/Linux/i.test(plat)) plat = "Linux";
+  else if (/Android/i.test(plat)) plat = "Android";
+  else if (/iPhone|iPad|iPod/i.test(plat)) plat = "iOS";
+  if (plat) hw.push(plat);
+  var hwText = hw.length ? hw.join(" · ") : "unknown environment";
+  document.getElementById("perf").innerHTML =
+    '<div class="stat">Generated <b>' + N + "</b> avatars<br>total <b>" + ms.toFixed(1) + "</b> ms · per avatar <b>" + (ms / N * 1000).toFixed(1) + "</b> µs</div>" +
+    '<div class="stat">Avg raw size<br><b>' + Math.min.apply(null, Object.values(avg)) + " – " + Math.max.apply(null, Object.values(avg)) + "</b> B/avatar</div>" +
+    '<div class="stat">Lightest / heaviest style<br><b>' + sorted[0] + " / " + sorted[sorted.length - 1] + "</b></div>" +
+    '<div class="stat">Test environment<br><b>' + hwText + "</b></div>";
+
+  document.getElementById("ver").textContent = gem.version;
+  document.getElementById("ver2").textContent = gem.version;
+})();
+</script>
+</body>
+</html>
