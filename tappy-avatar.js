@@ -1,5 +1,5 @@
 /*!
- * gem-avatar — deterministic character avatars from any string.
+ * tappy-avatar — deterministic character avatars from any string.
  * Single file, zero dependencies. UMD (browser global + CommonJS).
  *
  * Eight styles: snowflake, plant, pixel, line, geo, robot, emoji, silhouette.
@@ -10,7 +10,7 @@
  */
 (function (root, factory) {
   if (typeof module === "object" && module.exports) module.exports = factory();
-  else root.gemAvatar = factory();
+  else root.tappyAvatar = factory();
 })(typeof self !== "undefined" ? self : this, function () {
   "use strict";
 
@@ -471,7 +471,7 @@
 
   var STYLES = ["snowflake", "plant", "pixel", "line", "geo", "robot", "emoji", "silhouette"];
 
-  function gemAvatar(seed, opts) {
+  function tappyAvatar(seed, opts) {
     opts = opts || {};
     var rng = makeRng(seed, opts.overrides);
     var style = opts.style;
@@ -510,13 +510,13 @@
       title + plate + body + "</svg>";
   }
 
-  gemAvatar.uri = function (seed, opts) {
-    return "data:image/svg+xml;utf8," + encodeURIComponent(gemAvatar(seed, opts));
+  tappyAvatar.uri = function (seed, opts) {
+    return "data:image/svg+xml;utf8," + encodeURIComponent(tappyAvatar(seed, opts));
   };
-  gemAvatar.STYLES = STYLES;
-  gemAvatar._hue = function (seed) { return makeRng(seed).range("hue", 0, 360); };
-  gemAvatar._hex = function (seed) { return ("0000000" + hashString(normalize(seed)).toString(16)).slice(-8); };
-  gemAvatar.version = "0.5.2";
+  tappyAvatar.STYLES = STYLES;
+  tappyAvatar._hue = function (seed) { return makeRng(seed).range("hue", 0, 360); };
+  tappyAvatar._hex = function (seed) { return ("0000000" + hashString(normalize(seed)).toString(16)).slice(-8); };
+  tappyAvatar.version = "1.0.0";
 
-  return gemAvatar;
+  return tappyAvatar;
 });

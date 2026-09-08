@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GemAvatar — 8 种确定性头像风格</title>
+<title>TappyAvatar — 8 种确定性头像风格</title>
 <style>
   :root {
     --bg: #0b1220;
@@ -158,9 +158,9 @@
 <body>
 <div class="wrap">
   <header>
-    <h1><span class="logo"></span>GemAvatar — 8 种确定性头像风格</h1>
+    <h1><span class="logo"></span>TappyAvatar — 8 种确定性头像风格</h1>
     <p>同一个字符串永远渲染同一个头像，全部在浏览器本地运算，零请求零依赖。
-       名字 → <code>gemAvatar(name, { style })</code> → SVG 字符串。
+       名字 → <code>tappyAvatar(name, { style })</code> → SVG 字符串。
        8 种风格（snowflake / plant / pixel / line / geo / robot / emoji / silhouette）共享同一确定性核心，互不影响。</p>
   </header>
 
@@ -245,13 +245,13 @@
   </div>
 
   <footer>
-    GemAvatar v<span id="ver">–</span> · 单文件零依赖 · 浏览器本地确定性生成 · 8 种视觉风格 · MIT 许可 · <a href="test.html" style="color:var(--accent);text-decoration:none">查看自动化测试 →</a>
+    TappyAvatar v<span id="ver">–</span> · 单文件零依赖 · 浏览器本地确定性生成 · 8 种视觉风格 · MIT 许可 · <a href="test.html" style="color:var(--accent);text-decoration:none">查看自动化测试 →</a>
   </footer>
 </div>
 
 <div id="toast"></div>
 
-<script src="./gem-avatar.js"></script>
+<script src="./tappy-avatar.js"></script>
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
@@ -294,7 +294,7 @@
   function render() {
     var name = $("name").value;
     var o = optsFromControls();
-    var svg = gemAvatar(name, o);
+    var svg = tappyAvatar(name, o);
     preview.innerHTML = svg;
     $("styleName").textContent = currentStyle;
     $("styleSeedName").textContent = name;
@@ -303,11 +303,11 @@
     $("rawBytes").textContent = raw;
     gzipSize(svg).then(function (n) { $("gzipBytes").textContent = n; });
 
-    var hue = o.hue != null ? o.hue : gemAvatar._hue(name);
+    var hue = o.hue != null ? o.hue : tappyAvatar._hue(name);
     $("hueShown").textContent = Math.round(hue * 10) / 10;
     $("hueVal").textContent = o.hue == null ? "auto" : hue.toFixed(0) + "°";
     $("hue").disabled = $("hueAuto").checked;
-    $("hashHex").textContent = gemAvatar._hex(name);
+    $("hashHex").textContent = tappyAvatar._hex(name);
 
     // style-specific param visibility
     $("p-pixel").style.display = currentStyle === "pixel" ? "" : "none";
@@ -320,11 +320,11 @@
     var row = $("styleRow");
     var showName = name || "alain";
     row.innerHTML = "";
-    gemAvatar.STYLES.forEach(function (s) {
+    tappyAvatar.STYLES.forEach(function (s) {
       var cell = document.createElement("div");
       cell.className = "style-cell" + (s === currentStyle ? " active" : "");
       cell.title = s;
-      cell.innerHTML = gemAvatar(showName, { style: s, size: 44, background: "circle" }) + '<div class="sn"></div>';
+      cell.innerHTML = tappyAvatar(showName, { style: s, size: 44, background: "circle" }) + '<div class="sn"></div>';
       cell.querySelector(".sn").textContent = s;
       cell.addEventListener("click", function () {
         currentStyle = s;
@@ -346,10 +346,10 @@
   }
 
   function autoStyleFor(name) {
-    var target = gemAvatar(name, { style: "auto", size: 32 });
-    var styles = gemAvatar.STYLES;
+    var target = tappyAvatar(name, { style: "auto", size: 32 });
+    var styles = tappyAvatar.STYLES;
     for (var i = 0; i < styles.length; i++) {
-      if (gemAvatar(name, { style: styles[i], size: 32 }) === target) return styles[i];
+      if (tappyAvatar(name, { style: styles[i], size: 32 }) === target) return styles[i];
     }
     return "snowflake";
   }
@@ -360,7 +360,7 @@
     WALL.forEach(function (n) {
       var cell = document.createElement("div");
       cell.className = "cell";
-      cell.innerHTML = gemAvatar(n, { style: "auto", size: 52, background: "circle" }) + '<div class="nm"></div>';
+      cell.innerHTML = tappyAvatar(n, { style: "auto", size: 52, background: "circle" }) + '<div class="nm"></div>';
       cell.querySelector(".nm").textContent = n;
       cell.addEventListener("click", function () {
         $("name").value = n;
@@ -373,14 +373,14 @@
 
   function stats() {
     var t0 = performance.now();
-    for (var i = 0; i < 1000; i++) gemAvatar("perf-" + i);
+    for (var i = 0; i < 1000; i++) tappyAvatar("perf-" + i);
     $("perf").textContent = (performance.now() - t0).toFixed(1);
 
     var total = 0;
-    WALL.forEach(function (n) { total += utf8Bytes(gemAvatar(n, { style: "auto" })).length; });
+    WALL.forEach(function (n) { total += utf8Bytes(tappyAvatar(n, { style: "auto" })).length; });
     $("avgRaw").textContent = Math.round(total / WALL.length);
 
-    var samples = WALL.slice(0, 4).map(function (n) { return gemAvatar(n, { style: "auto" }); });
+    var samples = WALL.slice(0, 4).map(function (n) { return tappyAvatar(n, { style: "auto" }); });
     Promise.all(samples.map(gzipSize)).then(function (sizes) {
       $("avgGzip").textContent = Math.round(sizes.reduce(function (a, b) { return a + b; }, 0) / sizes.length);
     });
@@ -388,10 +388,10 @@
 
   function libGzip() {
     // file:// 打开时 fetch 本地文件会被浏览器拦截，回退到构建时测量值。
-    var FALLBACK = 6967;
+    var FALLBACK = 6969;
     $("libGzip").textContent = FALLBACK;
     try {
-      fetch("./gem-avatar.js")
+      fetch("./tappy-avatar.js")
         .then(function (r) { return r.text(); })
         .then(function (src) { return gzipSize(src); })
         .then(function (n) { if (typeof n === "number") $("libGzip").textContent = n; })
@@ -430,7 +430,7 @@
       .catch(function () { toast("复制失败，请手动选择"); });
   });
 
-  $("ver").textContent = gemAvatar.version;
+  $("ver").textContent = tappyAvatar.version;
   render();
   renderWall();
   stats();

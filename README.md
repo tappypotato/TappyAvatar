@@ -1,8 +1,8 @@
-# GemAvatar
+# TappyAvatar
 
 > 同一个字符串，永远渲染同一个头像。
 
-GemAvatar 是一个**确定性的头像生成器**：把任意用户名、邮箱、ID 等字符串，
+TappyAvatar 是一个**确定性的头像生成器**：把任意用户名、邮箱、ID 等字符串，
 在浏览器本地直接算出一个专属 SVG 头像。不需要数据库、不需要存储图片、
 不需要任何后端接口——纯前端、单文件、零依赖，是网站 / APP 做用户默认头像
 的理想方案。
@@ -16,7 +16,7 @@ GemAvatar 是一个**确定性的头像生成器**：把任意用户名、邮箱
 ## 特色
 
 - **确定性**：同名字同风格，输出字节级一致，每次打开永远相同。
-- **零依赖零请求**：单文件 `gem-avatar.js`，浏览器全局变量直接可用，
+- **零依赖零请求**：单文件 `tappy-avatar.js`，浏览器全局变量直接可用，
   无 npm 依赖、无网络请求、无后端。
 - **体积小**：gzip（含注释）约 6.8 KB；单颗头像 SVG 仅 0.3–0.5 KB。
 - **8 种风格**：雪花 / 植物 / 像素 / 线条 / 低多边形 / 机器人 / 表情 / 剪影，
@@ -30,8 +30,8 @@ GemAvatar 是一个**确定性的头像生成器**：把任意用户名、邮箱
   也可转成 `data:` URI 直接塞进 `<img src>`。
 - **可复现可测试**：不依赖时间、随机数、网络，服务端与客户端渲染逐字节一致。
 
-> **在线体验**：[Demo 调试器](https://tappypotato.github.io/GemAvatar/demo.html) ·
-> [自动化测试页](https://tappypotato.github.io/GemAvatar/test.html)
+> **在线体验**：[Demo 调试器](https://tappypotato.github.io/TappyAvatar/demo.html) ·
+> [自动化测试页](https://tappypotato.github.io/TappyAvatar/test.html)
 > （首次使用请在仓库 Settings → Pages 启用 main 分支，链接即可访问）
 
 ## 快速开始
@@ -39,25 +39,25 @@ GemAvatar 是一个**确定性的头像生成器**：把任意用户名、邮箱
 仓库里只需要引入这一个文件：
 
 ```
-gem-avatar.js   ← 唯一需要的文件（约 25 KB，gzip 约 6.8 KB）
+tappy-avatar.js   ← 唯一需要的文件（约 25 KB，gzip 约 6.8 KB）
 ```
 
 ### 浏览器引入
 
 ```html
-<script src="./gem-avatar.js"></script>
+<script src="./tappy-avatar.js"></script>
 <script>
-  // 全局变量 gemAvatar 直接可用
-  document.body.innerHTML = gemAvatar(user.id, { style: "pixel", size: 48 });
+  // 全局变量 tappyAvatar 直接可用
+  document.body.innerHTML = tappyAvatar(user.id, { style: "pixel", size: 48 });
 </script>
 ```
 
 ### Node / CommonJS 引入
 
 ```js
-const gemAvatar = require("./gem-avatar.js");
+const tappyAvatar = require("./tappy-avatar.js");
 // 转成 data URI，塞进 <img> 或 CSS background
-el.style.backgroundImage = `url("${gemAvatar.uri(user.id, { style: "robot" })}")`;
+el.style.backgroundImage = `url("${tappyAvatar.uri(user.id, { style: "robot" })}")`;
 ```
 
 ## 调用方式
@@ -65,16 +65,16 @@ el.style.backgroundImage = `url("${gemAvatar.uri(user.id, { style: "robot" })}")
 ### 1. 基础调用
 
 ```js
-gemAvatar("alain")                     // 默认风格（snowflake），无背景
-gemAvatar("alain@example.com")         // 任意字符串都行，邮箱、ID、中文名均可
+tappyAvatar("alain")                     // 默认风格（snowflake），无背景
+tappyAvatar("alain@example.com")         // 任意字符串都行，邮箱、ID、中文名均可
 // => '<svg xmlns="..." viewBox="0 0 100 100">…</svg>'
 ```
 
 ### 2. 指定风格（分类）
 
 ```js
-gemAvatar("alain", { style: "robot" })    // 固定用机器人风格
-gemAvatar("alain", { style: "emoji" })    // 固定用表情风格
+tappyAvatar("alain", { style: "robot" })    // 固定用机器人风格
+tappyAvatar("alain", { style: "emoji" })    // 固定用表情风格
 ```
 
 8 种风格见下方风格表。`style` 缺省为 `snowflake`；未知风格名自动回退
@@ -83,7 +83,7 @@ gemAvatar("alain", { style: "emoji" })    // 固定用表情风格
 ### 3. 随机风格（由名字决定）
 
 ```js
-gemAvatar("alain", { style: "auto" })   // 同一名字永远选同一种风格
+tappyAvatar("alain", { style: "auto" })   // 同一名字永远选同一种风格
 ```
 
 `"auto"` 不是真随机：风格由名字哈希决定，所以同一个用户每次看到的
@@ -92,17 +92,17 @@ gemAvatar("alain", { style: "auto" })   // 同一名字永远选同一种风格
 ### 4. 背景（有无底色）
 
 ```js
-gemAvatar("alain")                                        // 无（透明背景）
-gemAvatar("alain", { background: "circle" })              // 圆形
-gemAvatar("alain", { background: "square" })              // 方形
-gemAvatar("alain", { background: "squircle" })            // 圆角方
-gemAvatar("alain", { background: "circle", dark: true })  // 圆形 + 暗色模式
+tappyAvatar("alain")                                        // 无（透明背景）
+tappyAvatar("alain", { background: "circle" })              // 圆形
+tappyAvatar("alain", { background: "square" })              // 方形
+tappyAvatar("alain", { background: "squircle" })            // 圆角方
+tappyAvatar("alain", { background: "circle", dark: true })  // 圆形 + 暗色模式
 ```
 
 ### 5. 尺寸
 
 ```js
-gemAvatar("alain", { size: 48 })   // 输出 width="48" height="48"
+tappyAvatar("alain", { size: 48 })   // 输出 width="48" height="48"
 ```
 
 不传 `size` 时 SVG 不带宽高属性，尺寸完全由 CSS 决定。
@@ -110,7 +110,7 @@ gemAvatar("alain", { size: 48 })   // 输出 width="48" height="48"
 ### 6. 色相锁定
 
 ```js
-gemAvatar("alain", { hue: 210 })   // 锁住颜色，名字只决定形状
+tappyAvatar("alain", { hue: 210 })   // 锁住颜色，名字只决定形状
 ```
 
 缺省时色相由名字决定（`0–360°`）。
@@ -118,12 +118,12 @@ gemAvatar("alain", { hue: 210 })   // 锁住颜色，名字只决定形状
 ### 7. 转成图片 / 背景
 
 ```js
-gemAvatar.uri("alain", { style: "robot", background: "circle" })
+tappyAvatar.uri("alain", { style: "robot", background: "circle" })
 // => "data:image/svg+xml;utf8,%3Csvg…"
 
-<img src={gemAvatar.uri(user.id)} />                          // React
-document.querySelector("img").src = gemAvatar.uri(user.id);    // 原生
-el.style.backgroundImage = `url("${gemAvatar.uri(user.id)}")`; // CSS
+<img src={tappyAvatar.uri(user.id)} />                          // React
+document.querySelector("img").src = tappyAvatar.uri(user.id);    // 原生
+el.style.backgroundImage = `url("${tappyAvatar.uri(user.id)}")`; // CSS
 ```
 
 ### 8. 高级：锁定细节（overrides）
@@ -131,7 +131,7 @@ el.style.backgroundImage = `url("${gemAvatar.uri(user.id)}")`; // CSS
 固定任一内部参数在 0–1 位置，名字仍决定其余一切：
 
 ```js
-gemAvatar("alain", { style: "plant", overrides: { "pl.type": 0.5 } })
+tappyAvatar("alain", { style: "plant", overrides: { "pl.type": 0.5 } })
 ```
 
 ## 选项一览
@@ -187,7 +187,7 @@ gemAvatar("alain", { style: "plant", overrides: { "pl.type": 0.5 } })
 - 库体积（gzip，含全部注释）：**约 6.8 KB**，8 种风格打包。
 - 单颗头像 gzip 约 **0.3–0.5 KB**。
 - 生成耗时约 **5 µs/次**（MacBook Air M4，Node / V8 实测，混合 8 风格）。
-- 性能优化 v0.5.2：trait key 哈希缓存 + 十六进制转换提级，输出与旧版字节级一致。
+- 性能优化 v1.0.0：trait key 哈希缓存 + 十六进制转换提级，输出与旧版字节级一致。
 
 ## 确定性保证
 
@@ -209,3 +209,151 @@ gemAvatar("alain", { style: "plant", overrides: { "pl.type": 0.5 } })
 ## 许可
 
 MIT。
+
+---
+
+# TappyAvatar (English)
+
+> Same string, same avatar — forever.
+
+TappyAvatar is a **deterministic avatar generator**: any username, email or ID
+is turned into a unique SVG avatar entirely in the browser. No database, no
+stored images, no backend — a single zero-dependency file, ideal as a default
+avatar solution for websites and apps.
+
+```
+"alain"  →  always the same avatar
+"tove"   →  always a different avatar
+one name, another style  →  same seed, 8 different looks
+```
+
+## Highlights
+
+- **Deterministic**: same name + same style → byte-identical output, every time.
+- **Zero deps, zero requests**: one file `tappy-avatar.js`, global variable
+  ready to use; no npm deps, no network, no backend.
+- **Tiny**: ~6.8 KB gzipped (with comments); each avatar SVG is only 0.3–0.5 KB.
+- **8 styles**: snowflake / plant / pixel / line / geo / robot / emoji /
+  silhouette, each with internal random variants — one name can yield a huge
+  variety of looks.
+- **Style by choice or by name**: `style: "auto"` lets the name pick the style;
+  you can also fix any style explicitly.
+- **Background options**: none (transparent), circle, square, squircle; plus a
+  dark mode for dark UIs.
+- **Any size**: `size` controls the output `width`/`height`; geometry never
+  scales or distorts.
+- **Framework-agnostic**: output is a plain SVG string — works with
+  React / Vue / mini-programs / SSR, or as a `data:` URI for `<img src>`.
+- **Reproducible**: no reliance on time, randomness or network; server and
+  client render byte-identical results.
+
+> **Try it live**: [Demo playground](https://tappypotato.github.io/TappyAvatar/demo.html) ·
+> [Automated test page](https://tappypotato.github.io/TappyAvatar/test.html)
+> (enable Pages on the `main` branch in repo Settings first)
+
+## Quick start
+
+Only one file is needed:
+
+```
+tappy-avatar.js   ← the only required file (~25 KB raw, ~6.8 KB gzipped)
+```
+
+### Browser
+
+```html
+<script src="./tappy-avatar.js"></script>
+<script>
+  document.body.innerHTML = tappyAvatar(user.id, { style: "pixel", size: 48 });
+</script>
+```
+
+### Node / CommonJS
+
+```js
+const tappyAvatar = require("./tappy-avatar.js");
+el.style.backgroundImage = `url("${tappyAvatar.uri(user.id, { style: "robot" })}")`;
+```
+
+## Usage
+
+```js
+tappyAvatar("alain")                                      // default style, no background
+tappyAvatar("alain", { style: "robot" })                  // fixed style
+tappyAvatar("alain", { style: "auto" })                   // name decides the style
+tappyAvatar("alain", { background: "circle" })            // circle plate
+tappyAvatar("alain", { background: "square", dark: true })// square plate, dark mode
+tappyAvatar("alain", { size: 48 })                        // 48×48 px output
+tappyAvatar("alain", { hue: 210 })                        // lock the hue
+tappyAvatar.uri("alain")                                  // data: URI for <img> / CSS
+tappyAvatar("alain", { style: "plant", overrides: { "pl.type": 0.5 } }) // lock a trait
+// => '<svg xmlns="..." viewBox="0 0 100 100">…</svg>'
+```
+
+## Options
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `style` | style key or `"auto"` | `"snowflake"` | Visual style; unknown values fall back to default |
+| `size` | number | CSS decides | Output `width`/`height` (px) |
+| `hue` | number | name decides | Lock hue 0–360°, name controls shape only |
+| `background` | `"circle"`/`"square"`/`"squircle"` | none (transparent) | Plate shape |
+| `dark` | boolean | `false` | Dark mode (deeper plate & strokes) |
+| `pixel` | number | name decides | (pixel style) lock grid 9/11 |
+| `overrides` | object | — | Lock any trait to a 0–1 value, e.g. `{ "pl.type": 0.5 }` |
+| `title` | string | — | Accessible `<title>` |
+
+## Styles
+
+| style | description | keywords |
+|---|---|---|
+| `snowflake` | six-fold crystal: arm length / branches / center / sparkles | ice, symmetric, fresh |
+| `plant` | potted plant: cactus (arms/flower/face) / leaf / sprout | cute, healing, nature |
+| `pixel` | symmetric pixel face: 9/11 grid, hair/eyes/mouth per name | retro, game, pixel |
+| `line` | minimal line face: outline + hair strands + dots + mood | hand-drawn, minimal |
+| `geo` | low-poly face: facets + top hair block | low-poly, angular, abstract |
+| `robot` | robot: rounded-square head + antenna + LED eyes + grill | tech, mechanical, futuristic |
+| `emoji` | round face: 5 seeded expressions + blush | expressive, round |
+| `silhouette` | negative-space head & shoulders, features cut out | silhouette, deep, clean |
+
+## Architecture
+
+**Deterministic core (shared by all styles)**: one 32-bit seed hash from the
+normalized name (`NFC + trim + lowercase`), then every trait key is mixed with
+the seed through a non-linear multiply-shift mixer to derive independent
+[0,1) values — no chaining, adding styles never disturbs existing avatars.
+`"alain"` and `"alaim"` look completely unrelated.
+
+**Style layer (independent)**: each style is a `drawXxx(rng, opts, ramp)`
+function reading only the shared random source, palette and geometry helpers.
+Adding a style = one function + one entry in `STYLES`.
+
+## Size & performance
+
+- ~6.8 KB gzipped (with comments), all 8 styles included.
+- ~0.3–0.5 KB gzipped per avatar.
+- ~5 µs per avatar (MacBook Air M4, Node/V8, mixed 8 styles).
+- v1.0.0 perf work: trait-key hash cache + hoisted hex conversion,
+  output byte-identical to the previous release.
+
+## Determinism guarantees
+
+- Same name + same style → byte-identical SVG (within a version).
+- Same name + different style → 8 distinct looks from one seed.
+- Different names + same style → all unique across 8 styles × 1000 names.
+- 2000/2000 unique under `auto` style.
+- Independent of time, randomness and network; `size` never changes geometry.
+
+## Verification
+
+- Node unit tests: determinism, 1000-name uniqueness, option matrix,
+  SVG structure, special characters.
+- Headless browser screenshots: 8 styles × 8 names, dark mode, pixel grid.
+- `demo.html`: live style switching, pixel grid param, 16-name auto wall,
+  real-time byte/gzip stats.
+- `test.html`: 13 in-browser assertions + 8×8 visual matrix + option
+  comparisons + measured performance.
+
+## License
+
+MIT.
