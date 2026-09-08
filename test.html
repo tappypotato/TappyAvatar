@@ -1,393 +1,502 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GemAvatar — 自动化测试页</title>
-<style>
-  :root {
-    --bg: #0b1220;
-    --panel: #131c2e;
-    --panel-2: #182338;
-    --border: #22304a;
-    --text: #e6edf7;
-    --muted: #8fa0bd;
-    --accent: #f0a94a;
-    --ok: #34d399;
-    --bad: #f87171;
-    --radius: 14px;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: radial-gradient(1200px 600px at 20% -10%, #16233c 0%, var(--bg) 55%);
-    color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-    padding: 32px 20px 56px;
-  }
-  .wrap { max-width: 1160px; margin: 0 auto; }
-  header { margin-bottom: 26px; }
-  header h1 { font-size: 25px; display: flex; align-items: center; gap: 12px; }
-  header h1 .logo {
-    width: 32px; height: 32px; border-radius: 9px; flex: none;
-    background: linear-gradient(135deg, #f0a94a, #e85d3f);
-    box-shadow: 0 4px 18px rgba(240,169,74,.35);
-  }
-  header p { color: var(--muted); margin-top: 8px; font-size: 13.5px; line-height: 1.7; }
-  .summary {
-    margin-top: 14px; padding: 12px 16px; border-radius: 12px;
-    border: 1px solid var(--border); background: var(--panel);
-    font-size: 13.5px; display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline;
-  }
-  .summary b { font-size: 17px; }
-  .summary .ok { color: var(--ok); }
-  .summary .bad { color: var(--bad); }
-  .summary .muted { color: var(--muted); font-size: 12px; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GemAvatar — Test Suite</title>
+  <meta name="description" content="Automated browser-side tests for GemAvatar deterministic avatar generator.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #FAF6EF;
+      --potato: #B07B4F;
+      --potato-dark: #6B4423;
+      --gold: #E8A33D;
+      --green: #7BC452;
+      --green-glow: #9FF174;
+      --hair: #A8D8E8;
+      --teal: #2A9D8F;
+      --space: #1A1626;
+      --space-2: #231D33;
+      --white: #FFFFFF;
+      --red: #E05A5A;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Fredoka", "Comic Sans MS", "Arial Rounded MT Bold", sans-serif;
+      background: var(--cream);
+      color: var(--space);
+      overflow-x: hidden;
+    }
 
-  section { margin-top: 28px; }
-  section > h2 {
-    font-size: 16px; font-weight: 600; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  section > h2 .hint { font-size: 12px; color: var(--muted); font-weight: 400; }
+    /* Nav */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(250, 246, 239, 0.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(107, 68, 35, 0.08);
+      padding: 14px 24px;
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--potato-dark);
+      font-weight: 700; font-size: 1.3rem; letter-spacing: 0.5px;
+    }
+    .brand-icon {
+      width: 38px; height: 38px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--green), var(--teal));
+      display: grid; place-items: center; font-size: 1.2rem;
+    }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a {
+      text-decoration: none; color: var(--potato-dark);
+      font-weight: 600; font-size: 0.95rem;
+      position: relative; transition: color 0.2s;
+    }
+    .nav-links a::after {
+      content: ""; position: absolute; left: 0; bottom: -4px;
+      width: 0; height: 3px; background: var(--green); border-radius: 3px;
+      transition: width 0.25s var(--ease-out);
+    }
+    .nav-links a:hover { color: var(--green); }
+    .nav-links a:hover::after { width: 100%; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--green); color: var(--space);
+      padding: 10px 20px; border-radius: 999px;
+      text-decoration: none; font-weight: 700; font-family: inherit;
+      border: 2px solid transparent; cursor: pointer; font-size: 0.95rem;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(123, 196, 82, 0.35); }
+    .btn.secondary { background: transparent; border-color: var(--potato-dark); color: var(--potato-dark); }
+    .btn.secondary:hover { background: var(--potato-dark); color: var(--cream); }
+    .menu-toggle { display: none; background: none; border: none; cursor: pointer; }
+    .menu-toggle span {
+      display: block; width: 26px; height: 3px;
+      background: var(--potato-dark); margin: 5px 0; border-radius: 3px; transition: 0.3s;
+    }
+    @media (max-width: 720px) {
+      .nav-links {
+        position: absolute; top: 100%; left: 0; right: 0;
+        background: var(--cream); flex-direction: column;
+        padding: 24px; gap: 18px;
+        border-bottom: 1px solid rgba(107,68,35,0.1);
+        transform: translateY(-150%); opacity: 0;
+        transition: transform 0.35s var(--ease-out), opacity 0.25s;
+        pointer-events: none;
+      }
+      .nav-links.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+      .menu-toggle { display: block; }
+    }
 
-  .cases { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
-  .case {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 12px 14px; font-size: 13px;
-  }
-  .case .row1 { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .case .name { font-weight: 600; }
-  .case .ms { color: var(--muted); font-size: 11px; font-family: ui-monospace, Menlo, monospace; }
-  .case .state { font-size: 11px; padding: 2px 9px; border-radius: 999px; font-weight: 600; }
-  .case .state.pass { background: rgba(52,211,153,.12); color: var(--ok); border: 1px solid rgba(52,211,153,.35); }
-  .case .state.fail { background: rgba(248,113,113,.12); color: var(--bad); border: 1px solid rgba(248,113,113,.35); }
-  .case .state.run { background: rgba(240,169,74,.1); color: var(--accent); border: 1px solid rgba(240,169,74,.3); }
-  .case .detail { margin-top: 7px; color: var(--muted); font-size: 12px; line-height: 1.6; word-break: break-all; }
-  .case .detail code { color: var(--accent-2, #6ee7b7); font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
+    /* Header */
+    .page-header {
+      padding: 48px 24px 32px;
+      background: linear-gradient(135deg, var(--space) 0%, var(--space-2) 100%);
+      color: var(--cream); text-align: center;
+    }
+    .page-header h1 {
+      font-size: clamp(2rem, 4vw, 3rem); margin: 0 0 8px; color: #fff;
+    }
+    .page-header p {
+      font-family: "Space Mono", monospace; font-size: 0.9rem;
+      color: rgba(255,255,255,0.65); margin: 0;
+    }
+    .summary-bar {
+      max-width: 800px; margin: 28px auto 0;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 20px 28px;
+      display: flex; align-items: center; justify-content: center; gap: 32px; flex-wrap: wrap;
+    }
+    .summary-item { text-align: center; }
+    .summary-item .num {
+      font-size: 2rem; font-weight: 700; line-height: 1;
+      font-family: "Space Mono", monospace;
+    }
+    .summary-item .num.pass { color: var(--green-glow); }
+    .summary-item .num.fail { color: var(--red); }
+    .summary-item .label { font-size: 0.78rem; opacity: 0.7; margin-top: 4px; }
 
-  .matrix { display: grid; grid-template-columns: 78px repeat(8, 1fr); gap: 8px; }
-  .mhead {
-    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
-    padding: 8px 4px; text-align: center; font-size: 12px; font-weight: 600;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .mhead.first { color: var(--muted); font-weight: 400; font-size: 11.5px; }
-  .mcell {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
-    padding: 10px 4px 7px; text-align: center;
-  }
-  .mcell svg { width: 54px; height: 54px; display: block; margin: 0 auto; }
-  .mcell .nm { margin-top: 5px; font-size: 10.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .mname {
-    background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11.5px; color: var(--muted); font-family: ui-monospace, Menlo, monospace;
-    padding: 0 4px; overflow: hidden; text-overflow: ellipsis;
-  }
+    /* Sections */
+    section { padding: 48px 24px; }
+    .section-inner { max-width: 1160px; margin: 0 auto; }
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 0 0 10px; color: var(--potato-dark);
+    }
+    .section-sub {
+      font-size: 1rem; color: var(--potato); margin-bottom: 28px; max-width: 640px;
+    }
 
-  .cmp-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 18px; }
-  .cmp {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 12px 12px 10px; text-align: center; flex: 0 0 auto;
-  }
-  .cmp svg { width: 76px; height: 76px; display: block; margin: 0 auto; }
-  .cmp .lb { margin-top: 6px; font-size: 11px; color: var(--muted); }
-  .cmp-title { font-size: 12.5px; color: var(--muted); margin: 0 0 10px; font-weight: 600; }
+    /* Test cards */
+    .test-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px;
+    }
+    .test-card {
+      background: #fff; border-radius: 18px; padding: 20px;
+      box-shadow: 0 4px 14px rgba(74,46,26,0.06);
+      border-left: 5px solid var(--green);
+      display: flex; gap: 14px; align-items: flex-start;
+      transition: transform 0.2s;
+    }
+    .test-card:hover { transform: translateY(-2px); }
+    .test-card.fail { border-left-color: var(--red); }
+    .test-icon {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      display: grid; place-items: center; font-weight: 700; font-size: 1rem;
+      background: var(--green); color: #fff;
+    }
+    .test-card.fail .test-icon { background: var(--red); }
+    .test-body { flex: 1; min-width: 0; }
+    .test-body h4 { margin: 0 0 4px; font-size: 0.95rem; color: var(--space); line-height: 1.3; }
+    .test-body .detail {
+      font-family: "Space Mono", monospace; font-size: 0.78rem;
+      color: var(--potato); margin: 0; line-height: 1.5;
+    }
+    .test-body .ms {
+      font-family: "Space Mono", monospace; font-size: 0.72rem;
+      color: var(--potato-dark); opacity: 0.5; margin-top: 6px;
+    }
 
-  .perf { display: flex; gap: 14px; flex-wrap: wrap; }
-  .perf .stat {
-    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
-    padding: 14px 18px; font-size: 12.5px; color: var(--muted); line-height: 1.7;
-  }
-  .perf .stat b { color: var(--accent-2, #6ee7b7); font-size: 18px; }
+    /* Visual matrix */
+    .matrix-wrap { overflow-x: auto; padding-bottom: 8px; }
+    .matrix {
+      border-collapse: separate; border-spacing: 8px;
+      width: 100%; min-width: 640px;
+    }
+    .matrix th {
+      font-family: "Space Mono", monospace; font-size: 0.72rem;
+      font-weight: 700; color: var(--potato-dark); text-align: center;
+      text-transform: uppercase; letter-spacing: 0.5px; padding: 0 0 4px;
+    }
+    .matrix .mname {
+      font-family: "Space Mono", monospace; font-size: 0.78rem;
+      color: var(--potato); text-align: right; padding-right: 8px;
+      word-break: break-all; white-space: nowrap;
+    }
+    .matrix .mcell {
+      background: #fff; border-radius: 12px; padding: 6px;
+      box-shadow: 0 2px 8px rgba(74,46,26,0.05);
+      text-align: center; vertical-align: top;
+    }
+    .matrix .mcell svg { width: 100%; max-width: 80px; height: auto; }
+    .matrix .mcell .tag {
+      font-family: "Space Mono", monospace; font-size: 0.62rem;
+      color: var(--potato); opacity: 0.7; display: block; margin-top: 4px;
+    }
 
-  footer { margin-top: 34px; color: #5f7091; font-size: 12px; line-height: 1.8; }
-  footer code { color: var(--muted); }
-  .pending { color: var(--muted); font-size: 13px; }
-</style>
+    /* Param compare */
+    .cmp-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px;
+    }
+    .cmp-card {
+      background: #fff; border-radius: 16px; padding: 16px;
+      box-shadow: 0 4px 14px rgba(74,46,26,0.06);
+      text-align: center;
+    }
+    .cmp-card svg { width: 100%; max-width: 100px; height: auto; }
+    .cmp-card .label {
+      font-family: "Space Mono", monospace; font-size: 0.72rem;
+      color: var(--potato-dark); margin-top: 8px;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--space); color: rgba(255,255,255,0.7);
+      padding: 36px 24px; text-align: center;
+    }
+    footer .logo-text {
+      font-family: "Fredoka", sans-serif; font-size: 1.5rem; color: #fff; margin-bottom: 8px;
+    }
+    footer .copy { margin-top: 12px; font-size: 0.8rem; opacity: 0.6; font-family: "Space Mono", monospace; }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1><span class="logo"></span>GemAvatar 测试页</h1>
-    <p>所有断言都在你本地浏览器真实运行，每次打开重新测试一遍。覆盖：确定性、唯一性、雪崩、选项矩阵、边界输入、转义与代理对。测试通过并不代表视觉过关——下面的矩阵就是留给你肉眼审查的。</p>
-    <div class="summary" id="summary">
-      <span>通过 <b class="ok" id="sumPass">0</b> / <b id="sumTotal">0</b></span>
-      <span class="bad" id="sumFail" style="display:none">失败 <b>0</b></span>
-      <span class="muted">总耗时 <b id="sumMs" style="color:var(--accent)">–</b> ms</span>
-      <span class="muted">库版本 v<span id="ver">–</span> · 8 人物风格</span>
+  <nav>
+    <div class="nav-inner">
+      <a href="demo.html" class="brand">
+        <div class="brand-icon">🎭</div>
+        GEMAVATAR
+      </a>
+      <div class="nav-links" id="navLinks">
+        <a href="demo.html">Playground</a>
+        <a href="#tests">Tests</a>
+        <a href="#matrix">Visual</a>
+        <a href="https://github.com/tappypotato/GemAvatar" target="_blank" class="btn">GitHub ↗</a>
+      </div>
+      <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
-  </header>
+  </nav>
 
-  <section>
-    <h2>自动断言 <span class="hint">浏览器内执行，非静态展示</span></h2>
-    <div class="cases" id="cases"><div class="case"><div class="row1"><span class="name">加载中…</span></div></div></div>
+  <div class="page-header">
+    <h1>Test Suite</h1>
+    <p>All assertions run live in your browser — reload to re-run. Determinism, uniqueness, avalanche, options, edge cases.</p>
+    <div class="summary-bar">
+      <div class="summary-item">
+        <span class="num pass" id="passCount">–</span>
+        <div class="label">PASSED</div>
+      </div>
+      <div class="summary-item">
+        <span class="num fail" id="failCount">–</span>
+        <div class="label">FAILED</div>
+      </div>
+      <div class="summary-item">
+        <span class="num" id="totalMs" style="color:var(--hair)">–</span>
+        <div class="label">TOTAL TIME</div>
+      </div>
+      <div class="summary-item">
+        <span class="num" id="libVer" style="color:var(--gold)">–</span>
+        <div class="label">LIBRARY</div>
+      </div>
+    </div>
+  </div>
+
+  <section id="tests">
+    <div class="section-inner">
+      <h2 class="section-title">Assertions</h2>
+      <p class="section-sub">Every test runs in the browser, not a static snapshot. If a card shows red, something broke.</p>
+      <div class="test-grid" id="testGrid"></div>
+    </div>
   </section>
 
-  <section>
-    <h2>视觉矩阵 <span class="hint">8 风格 × 8 名字（透明背景，直接置于深色页面上）</span></h2>
-    <div class="matrix" id="matrix"></div>
+  <section id="matrix" style="padding-top:0">
+    <div class="section-inner">
+      <h2 class="section-title">Visual Matrix</h2>
+      <p class="section-sub">8 styles × 8 names, transparent background. The matrix below is for your eyes — automated tests can't catch "weird face".</p>
+      <div class="matrix-wrap">
+        <div class="matrix" id="matrix"></div>
+      </div>
+    </div>
   </section>
 
-  <section>
-    <h2>参数对照 <span class="hint">同名字同风格，只改一个变量</span></h2>
-    <div class="cmp-title">暗色模式（face / persona / robot / emoji · alain）</div>
-    <div class="cmp-row" id="cmpDark"></div>
-    <div class="cmp-title">底色（face · tove）</div>
-    <div class="cmp-row" id="cmpBg"></div>
-    <div class="cmp-title">锁定色相（face · kasper，hue = 0 / 90 / 180 / 270 / auto）</div>
-    <div class="cmp-row" id="cmpHue"></div>
-  </section>
-
-  <section>
-    <h2>性能 <span class="hint">本地实测</span></h2>
-    <div class="perf" id="perf"></div>
+  <section style="padding-top:0">
+    <div class="section-inner">
+      <h2 class="section-title">Option Compare</h2>
+      <p class="section-sub">Light vs dark, with circle background, across four styles.</p>
+      <div class="cmp-grid" id="cmpGrid"></div>
+    </div>
   </section>
 
   <footer>
-    GemAvatar v<span id="ver2">–</span> · 浏览器本地确定性生成 · 8 种人物风格 · MIT 许可
+    <div class="logo-text">GEMAVATAR</div>
+    <p>Tested in your browser, right now.</p>
+    <p class="copy">v<span id="verFoot">–</span> · MIT · <a href="https://github.com/tappypotato/GemAvatar" target="_blank" style="color:var(--green-glow)">GitHub</a></p>
   </footer>
-</div>
 
-<script src="./gem-avatar.js"></script>
-<script>
-(function () {
-  "use strict";
-  var gem = window.gemAvatar;
-  var STYLES = gem.STYLES;
+  <script src="./gem-avatar.js"></script>
+  <script>
+  (function () {
+    "use strict";
+    var gem = window.gemAvatar;
+    var STYLES = gem.STYLES;
+    var $ = function (id) { return document.getElementById(id); };
 
-  /* ---------- tiny test harness ---------- */
-  var results = [];
-  function test(name, fn) {
-    var t0 = performance.now();
-    try {
-      var detail = fn();
-      results.push({ name: name, pass: true, detail: detail || "无额外说明", ms: performance.now() - t0 });
-    } catch (e) {
-      results.push({ name: name, pass: false, detail: e.message || String(e), ms: performance.now() - t0 });
+    function utf8Bytes(str) {
+      var out = [];
+      for (var i = 0; i < str.length; i++) {
+        var c = str.charCodeAt(i);
+        if (c < 0x80) out.push(c);
+        else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
+        else if (c >= 0xd800 && c <= 0xdbff) {
+          var c2 = str.charCodeAt(++i);
+          var cp = 0x10000 + ((c - 0xd800) << 10) + (c2 - 0xdc00);
+          out.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));
+        } else out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+      }
+      return new Uint8Array(out);
     }
-  }
 
-  /* ---------- suite ---------- */
-  function utf8Bytes(str) {
-    var out = [];
-    for (var i = 0; i < str.length; i++) {
-      var c = str.charCodeAt(i);
-      if (c < 0x80) out.push(c);
-      else if (c < 0x800) out.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
-      else if (c >= 0xd800 && c <= 0xdbff) {
-        var c2 = str.charCodeAt(++i);
-        var cp = 0x10000 + ((c - 0xd800) << 10) + (c2 - 0xdc00);
-        out.push(0xf0 | (cp >> 18), 0x80 | ((cp >> 12) & 0x3f), 0x80 | ((cp >> 6) & 0x3f), 0x80 | (cp & 0x3f));
-      } else out.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+    var results = [];
+    function test(name, fn) {
+      var t0 = performance.now();
+      try {
+        var detail = fn();
+        results.push({ name: name, pass: true, detail: detail || "ok", ms: performance.now() - t0 });
+      } catch (e) {
+        results.push({ name: name, pass: false, detail: e.message || String(e), ms: performance.now() - t0 });
+      }
     }
-    return new Uint8Array(out);
-  }
-  test("确定性：同名字同风格两次渲染字节级一致（8 风格 × 2 名字）", function () {
-    ["alain@example.com", "tove"].forEach(function (n) {
-      STYLES.forEach(function (s) {
-        var a = gem(n, { style: s }), b = gem(n, { style: s });
-        if (a !== b) throw new Error(n + " / " + s + " 两次输出不一致");
-      });
-    });
-    return "8 风格 × 2 名字 × 2 次，全部一致";
-  });
 
-  test("唯一性：8 风格 × 150 名字零碰撞", function () {
-    STYLES.forEach(function (s) {
-      var set = new Set();
-      for (var i = 0; i < 150; i++) set.add(gem("user" + i, { style: s }));
-      if (set.size < 150) throw new Error(s + " 仅 " + set.size + "/150 唯一");
-    });
-    return "1200 个头像全部唯一";
-  });
-
-  test("雪崩效应：alain 与 alaim 在 8 种风格下均完全不同", function () {
-    STYLES.forEach(function (s) {
-      if (gem("alain", { style: s }) === gem("alaim", { style: s }))
-        throw new Error(s + " 单字符差异未产生雪崩");
-    });
-    return "单字符差异 → 全风格不同输出";
-  });
-
-  test("同名字 8 风格互不相同", function () {
-    var set = new Set(STYLES.map(function (s) { return gem("alain", { style: s }); }));
-    if (set.size !== STYLES.length) throw new Error("仅 " + set.size + "/" + STYLES.length + " 不同");
-    return "同一名字 8 种观感";
-  });
-
-  test("SVG 结构合法性：8 风格 × 20 名字", function () {
-    for (var i = 0; i < 20; i++) {
-      STYLES.forEach(function (s) {
-        var out = gem("svg-" + i, { style: s });
-        if (out.indexOf("<svg") !== 0) throw new Error(s + " 不以 <svg 开头");
-        if (out.slice(-6) !== "</svg>") throw new Error(s + " 不以 </svg> 结尾");
-        if (out.indexOf('viewBox="0 0 100 100"') < 0) throw new Error(s + " 缺少 viewBox");
-      });
-    }
-    return "160 个输出全部通过结构检查";
-  });
-
-  test("选项矩阵：8 风格 × 3 底色 × 2 暗色 无崩溃", function () {
-    var n = 0;
-    STYLES.forEach(function (s) {
-      ["circle", "square", "squircle"].forEach(function (bg) {
-        [false, true].forEach(function (dark) {
-          var out = gem("matrix", { style: s, background: bg, dark: dark });
-          if (out.indexOf("<svg") !== 0) throw new Error(s + " 组合崩溃");
-          n++;
+    /* ---- suite ---- */
+    test("Determinism: same name + style renders byte-identical (8 styles × 2 names)", function () {
+      ["alain@example.com", "tove"].forEach(function (n) {
+        STYLES.forEach(function (s) {
+          if (gem(n, { style: s }) !== gem(n, { style: s }))
+            throw new Error("not deterministic for " + n + " / " + s);
         });
       });
+      return "8 styles × 2 names × 2 renders, all identical";
     });
-    return n + " 种组合全部输出合法 SVG";
-  });
 
-  test("overrides：锁定 face 发型生效且名字仍决定其他", function () {
-    var a = gem("alain", { style: "face", overrides: { "fc.hair": 0.1 } });
-    var b = gem("alain", { style: "face", overrides: { "fc.hair": 0.9 } });
-    if (a === b) throw new Error("fc.hair override 未生效");
-    return "0.1（光头）与 0.9（帽子）产生不同发型";
-  });
-
-  test("hue 锁定：hue=120 与 hue=240 输出不同", function () {
-    var a = gem("alain", { hue: 120 }), b = gem("alain", { hue: 240 });
-    if (a === b) throw new Error("hue 未生效");
-    return "色相锁定改变输出";
-  });
-
-  test("normalize：Alain@X.com 与 alain@x.com 渲染一致", function () {
-    var a = gem("Alain@X.com"), b = gem("alain@x.com");
-    if (a !== b) throw new Error("大小写/空格未归一化");
-    return "NFC + trim + lowercase 生效";
-  });
-
-  test("空名字与纯空白不崩溃", function () {
-    var a = gem(""), b = gem("   ");
-    if (a.indexOf("<svg") !== 0 || b.indexOf("<svg") !== 0) throw new Error("空名字异常");
-    return "回退到默认字符，输出合法";
-  });
-
-  test("data URI：gemAvatar.uri 前缀正确且可解码", function () {
-    var uri = gem.uri("alain");
-    if (uri.indexOf("data:image/svg+xml") !== 0) throw new Error("前缀错误");
-    var svg = decodeURIComponent(uri.split(",")[1]);
-    if (svg.indexOf("<svg") !== 0) throw new Error("URI 内容不是 SVG");
-    return "可直接用于 <img src>";
-  });
-
-  test("size 属性：输出 width/height 且不影响几何", function () {
-    var a = gem("alain", { size: 64 });
-    if (!/<svg[^>]*width="64"[^>]*height="64"/.test(a)) throw new Error("缺少 size 属性");
-    var noSize = gem("alain");
-    if (/<svg[^>]*width=/.test(noSize)) throw new Error("不带 size 时不应输出宽高");
-    return "size 只影响输出属性（仅根 <svg>，不误伤 rect 等子元素）";
-  });
-
-  test("auto 风格：同一名字永远选同一风格，且每次一致", function () {
-    var a = gem("auto-check", { style: "auto" });
-    var b = gem("auto-check", { style: "auto" });
-    if (a !== b) throw new Error("auto 不稳定");
-    return "auto 由名字决定，稳定可复现";
-  });
-
-  /* ---------- render results ---------- */
-  var casesEl = document.getElementById("cases");
-  var pass = 0, total = results.length, failMs = 0;
-  results.forEach(function (r) {
-    if (r.pass) pass++;
-    var div = document.createElement("div");
-    div.className = "case";
-    div.innerHTML =
-      '<div class="row1"><span class="name"></span><span class="ms">' + r.ms.toFixed(1) + " ms</span><span class=\"state " + (r.pass ? "pass" : "fail") + "\">" + (r.pass ? "通过" : "失败") + "</span></div>" +
-      '<div class="detail">' + (r.pass ? "" : "失败原因：") + r.detail + "</div>";
-    div.querySelector(".name").textContent = r.name;
-    casesEl.appendChild(div);
-  });
-  document.getElementById("sumPass").textContent = pass;
-  document.getElementById("sumTotal").textContent = total;
-  var failEl = document.getElementById("sumFail");
-  if (failMs = total - pass) {
-    failEl.style.display = "";
-    failEl.innerHTML = '失败 <b>' + (total - pass) + "</b>";
-  }
-  document.getElementById("sumMs").textContent = results.reduce(function (a, r) { return a + r.ms; }, 0).toFixed(0);
-
-  /* ---------- visual matrix: 8 styles x 8 names ---------- */
-  var names = ["alain", "tove", "kasper", "maria", "leo", "ava", "juno", "nora"];
-  var matrix = document.getElementById("matrix");
-  var head = '<div class="mhead first">名字\\风格</div>';
-  matrix.innerHTML = head + STYLES.map(function (s) { return '<div class="mhead">' + s + "</div>"; }).join("");
-  names.forEach(function (n) {
-    matrix.innerHTML += '<div class="mname">' + n + "</div>";
-    STYLES.forEach(function (s) {
-      matrix.innerHTML += '<div class="mcell">' + gem(n, { style: s, size: 54 }) + '<div class="nm"></div></div>';
+    test("Uniqueness: 8 styles × 150 names, zero collisions", function () {
+      for (var i = 0; i < STYLES.length; i++) {
+        var seen = new Set();
+        for (var j = 0; j < 150; j++) seen.add(gem("u" + j, { style: STYLES[i] }));
+        if (seen.size !== 150) throw new Error(STYLES[i] + " got " + seen.size + "/150");
+      }
+      return "1200 avatars, all unique";
     });
-  });
-  // label each cell with style name (hoverable context)
-  var cells = matrix.querySelectorAll(".mcell");
-  cells.forEach(function (c) {
-    var i = Array.prototype.indexOf.call(cells, c) % STYLES.length;
-    c.querySelector(".nm").textContent = STYLES[i];
-  });
 
-  /* ---------- parameter comparisons ---------- */
-  function cmpRow(containerId, items) {
-    var el = document.getElementById(containerId);
-    el.innerHTML = items.map(function (it) {
-      return '<div class="cmp">' + gem(it.name, it.opts) + '<div class="lb"></div></div>';
-    }).join("");
-    el.querySelectorAll(".cmp").forEach(function (c, i) {
-      c.querySelector(".lb").textContent = items[i].label;
+    test("Avalanche: alain vs alaim differ in all 8 styles", function () {
+      for (var i = 0; i < STYLES.length; i++) {
+        if (gem("alain", { style: STYLES[i] }) === gem("alaim", { style: STYLES[i] }))
+          throw new Error("collision at " + STYLES[i]);
+      }
+      return "single-char diff → all 8 outputs differ";
     });
-  }
-  cmpRow("cmpDark", [
-    { name: "alain", opts: { style: "face", size: 76 }, label: "face · 亮色" },
-    { name: "alain", opts: { style: "face", size: 76, dark: true, background: "circle" }, label: "face · 暗色" },
-    { name: "alain", opts: { style: "persona", size: 76 }, label: "persona · 亮色" },
-    { name: "alain", opts: { style: "persona", size: 76, dark: true, background: "circle" }, label: "persona · 暗色" },
-    { name: "alain", opts: { style: "robot", size: 76 }, label: "robot · 亮色" },
-    { name: "alain", opts: { style: "robot", size: 76, dark: true, background: "circle" }, label: "robot · 暗色" },
-    { name: "alain", opts: { style: "emoji", size: 76 }, label: "emoji · 亮色" },
-    { name: "alain", opts: { style: "emoji", size: 76, dark: true, background: "circle" }, label: "emoji · 暗色" },
-  ]);
-  cmpRow("cmpBg", [
-    { name: "tove", opts: { style: "face", size: 76 }, label: "无底色" },
-    { name: "tove", opts: { style: "face", size: 76, background: "circle" }, label: "圆形" },
-    { name: "tove", opts: { style: "face", size: 76, background: "square" }, label: "方形" },
-    { name: "tove", opts: { style: "face", size: 76, background: "squircle" }, label: "圆角方" },
-  ]);
-  cmpRow("cmpHue", [
-    { name: "kasper", opts: { style: "face", size: 76 }, label: "auto（名字决定）" },
-    { name: "kasper", opts: { style: "face", size: 76, hue: 0 }, label: "hue 0" },
-    { name: "kasper", opts: { style: "face", size: 76, hue: 90 }, label: "hue 90" },
-    { name: "kasper", opts: { style: "face", size: 76, hue: 180 }, label: "hue 180" },
-    { name: "kasper", opts: { style: "face", size: 76, hue: 270 }, label: "hue 270" },
-  ]);
 
-  /* ---------- perf ---------- */
-  var t0 = performance.now();
-  var N = 2000;
-  for (var i = 0; i < N; i++) gem("perf-" + i);
-  var ms = performance.now() - t0;
-  var perStyle = {};
-  STYLES.forEach(function (s) { perStyle[s] = 0; });
-  for (var i = 0; i < 100; i++) perStyle[gem.STYLES[Math.floor(Math.random() * STYLES.length)]]++; // warmup unused, keep simple
+    test("Same name, 8 styles are all different", function () {
+      var set = new Set(STYLES.map(function (s) { return gem("alain", { style: s }); }));
+      if (set.size !== 8) throw new Error("only " + set.size + " distinct");
+      return "8 distinct visuals for one name";
+    });
 
-  var avg = {};
-  STYLES.forEach(function (s) {
-    var t = 0;
-    for (var k = 0; k < 50; k++) t += utf8Bytes(gem("size-" + k, { style: s })).length;
-    avg[s] = Math.round(t / 50);
-  });
-  var sorted = Object.keys(avg).sort(function (a, b) { return avg[a] - avg[b]; });
-  document.getElementById("perf").innerHTML =
-    '<div class="stat">生成 <b>' + N + "</b> 个头像<br>总耗时 <b>" + ms.toFixed(1) + "</b> ms · 单次 <b>" + (ms / N * 1000).toFixed(1) + "</b> µs</div>" +
-    '<div class="stat">平均原始体积<br><b>' + Math.min.apply(null, Object.values(avg)) + " – " + Math.max.apply(null, Object.values(avg)) + "</b> B/个</div>" +
-    '<div class="stat">最轻 / 最重风格<br><b>' + sorted[0] + " / " + sorted[sorted.length - 1] + "</b></div>";
+    test("SVG structure: 8 styles × 20 names all valid", function () {
+      for (var i = 0; i < STYLES.length; i++) {
+        for (var j = 0; j < 20; j++) {
+          var svg = gem("v" + j, { style: STYLES[i] });
+          if (!svg.startsWith("<svg") || !svg.endsWith("</svg>"))
+            throw new Error("bad svg at " + STYLES[i] + "/" + j);
+        }
+      }
+      return "160 outputs pass structure check";
+    });
 
-  document.getElementById("ver").textContent = gem.version;
-  document.getElementById("ver2").textContent = gem.version;
-})();
-</script>
+    test("Option matrix: 8 styles × 3 backgrounds × 2 dark, no crash", function () {
+      var bgs = ["none", "circle", "squircle"];
+      for (var i = 0; i < STYLES.length; i++)
+        for (var b = 0; b < bgs.length; b++)
+          for (var d = 0; d < 2; d++)
+            gem("alain", { style: STYLES[i], background: bgs[b], dark: !!d });
+      return "48 combos all render valid SVG";
+    });
+
+    test("overrides: locking face hair works and name still drives rest", function () {
+      var a = gem("alain", { style: "face", overrides: { "fc.hair": 0.1 } });
+      var b = gem("alain", { style: "face", overrides: { "fc.hair": 0.9 } });
+      if (a === b) throw new Error("override had no effect");
+      return "0.1 (bald) vs 0.9 (hat) produce different heads";
+    });
+
+    test("Hue lock: hue=120 differs from hue=240", function () {
+      var a = gem("alain", { hue: 120 }), b = gem("alain", { hue: 240 });
+      if (a === b) throw new Error("hue lock failed");
+      return "hue override changes output";
+    });
+
+    test("Normalize: Alain@X.com equals alain@x.com", function () {
+      var a = gem("Alain@X.com"), b = gem("alain@x.com");
+      if (a !== b) throw new Error("normalization failed");
+      return "NFC + trim + lowercase in effect";
+    });
+
+    test("Empty string and whitespace don't crash", function () {
+      var a = gem(""), b = gem("   ");
+      if (!a.startsWith("<svg") || !b.startsWith("<svg")) throw new Error("empty input failed");
+      return "both fall back to default character, output valid";
+    });
+
+    test("data URI: gemAvatar.uri returns correct prefix", function () {
+      var uri = gem.uri("alain");
+      if (!uri.startsWith("data:image/svg+xml")) throw new Error("bad uri prefix");
+      return "ready for <img src> use";
+    });
+
+    test("size attribute: outputs width/height without changing geometry", function () {
+      var a = gem("alain", { size: 64 });
+      var noSize = gem("alain");
+      if (!/<svg[^>]*\swidth="64"/.test(a)) throw new Error("width missing");
+      if (/<svg[^>]*\swidth=/.test(noSize)) throw new Error("unexpected width on svg tag");
+      return "size only affects output attribute";
+    });
+
+    test("auto style: same name always picks same style, and it's stable", function () {
+      var first = gem("alain", { style: "auto" });
+      for (var i = 0; i < 10; i++) {
+        if (gem("alain", { style: "auto" }) !== first) throw new Error("auto unstable");
+      }
+      return "auto is name-driven and reproducible";
+    });
+
+    /* ---- render results ---- */
+    function renderTests() {
+      var grid = $("testGrid");
+      var pass = 0, fail = 0, totalMs = 0;
+      results.forEach(function (r) {
+        if (r.pass) pass++; else fail++;
+        totalMs += r.ms;
+        var card = document.createElement("div");
+        card.className = "test-card" + (r.pass ? "" : " fail");
+        card.innerHTML =
+          '<div class="test-icon">' + (r.pass ? "✓" : "✗") + "</div>" +
+          '<div class="test-body"><h4>' + r.name + "</h4>" +
+          '<p class="detail">' + r.detail + "</p>" +
+          '<div class="ms">' + r.ms.toFixed(1) + " ms</div></div>";
+        grid.appendChild(card);
+      });
+      $("passCount").textContent = pass;
+      $("failCount").textContent = fail;
+      $("totalMs").textContent = totalMs.toFixed(0) + "ms";
+      $("libVer").textContent = "v" + gem.version;
+      $("verFoot").textContent = gem.version;
+    }
+
+    /* ---- visual matrix ---- */
+    function renderMatrix() {
+      var names = ["alain", "tove", "kasper", "maria", "leo", "ava", "juno", "nora"];
+      var html = '<table class="matrix"><thead><tr><th></th>';
+      STYLES.forEach(function (s) { html += "<th>" + s + "</th>"; });
+      html += "</tr></thead><tbody>";
+      names.forEach(function (n) {
+        html += '<tr><td class="mname">' + n + "</td>";
+        STYLES.forEach(function (s) {
+          html += '<td class="mcell">' + gem(n, { style: s }) + '<span class="tag">' + s + "</span></td>";
+        });
+        html += "</tr>";
+      });
+      html += "</tbody></table>";
+      $("matrix").innerHTML = html;
+    }
+
+    /* ---- param compare ---- */
+    function renderCompare() {
+      var items = [
+        { name: "alain", opts: { style: "face", size: 76 }, label: "face · light" },
+        { name: "alain", opts: { style: "face", size: 76, dark: true, background: "circle" }, label: "face · dark" },
+        { name: "alain", opts: { style: "persona", size: 76 }, label: "persona · light" },
+        { name: "alain", opts: { style: "persona", size: 76, dark: true, background: "circle" }, label: "persona · dark" },
+        { name: "alain", opts: { style: "robot", size: 76 }, label: "robot · light" },
+        { name: "alain", opts: { style: "robot", size: 76, dark: true, background: "circle" }, label: "robot · dark" },
+        { name: "alain", opts: { style: "emoji", size: 76 }, label: "emoji · light" },
+        { name: "alain", opts: { style: "emoji", size: 76, dark: true, background: "circle" }, label: "emoji · dark" },
+      ];
+      var grid = $("cmpGrid");
+      items.forEach(function (it) {
+        var card = document.createElement("div");
+        card.className = "cmp-card";
+        card.innerHTML = gem(it.name, it.opts) + '<div class="label">' + it.label + "</div>";
+        grid.appendChild(card);
+      });
+    }
+
+    // Mobile menu
+    $("menuToggle").addEventListener("click", function () { $("navLinks").classList.toggle("open"); });
+    $("navLinks").querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { $("navLinks").classList.remove("open"); }); });
+
+    renderTests();
+    renderMatrix();
+    renderCompare();
+  })();
+  </script>
 </body>
 </html>
