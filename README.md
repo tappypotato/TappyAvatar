@@ -1,26 +1,160 @@
 # GemAvatar
 
-同一字符串永远渲染同一个头像。单文件、零依赖、纯浏览器本地运算。
-**8 种头像风格共享同一个确定性核心**：把任意用户名 / 邮箱 / id
-确定性地变成 SVG 头像。同名字在同风格下字节级一致；同名字在不同风格下
-得到 8 个不同观感，全部来自同一颗种子。
+> 同一个字符串，永远渲染同一个头像。
 
-> **在线体验**：[Demo 调试器](https://tappypotato.github.io/GemAvatar/demo.html) · [自动化测试页](https://tappypotato.github.io/GemAvatar/test.html)
+GemAvatar 是一个**确定性的头像生成器**：把任意用户名、邮箱、ID 等字符串，
+在浏览器本地直接算出一个专属 SVG 头像。不需要数据库、不需要存储图片、
+不需要任何后端接口——纯前端、单文件、零依赖，是网站 / APP 做用户默认头像
+的理想方案。
+
+```
+用户名 "alain"  →  永远同一个头像
+用户名 "tove"   →  永远另一个头像
+同一名字换风格  →  同一颗种子，8 种不同观感
+```
+
+## 特色
+
+- **确定性**：同名字同风格，输出字节级一致，每次打开永远相同。
+- **零依赖零请求**：单文件 `gem-avatar.js`，浏览器全局变量直接可用，
+  无 npm 依赖、无网络请求、无后端。
+- **体积小**：gzip（含注释）约 6.8 KB；单颗头像 SVG 仅 0.3–0.5 KB。
+- **8 种风格**：雪花 / 植物 / 像素 / 线条 / 低多边形 / 机器人 / 表情 / 剪影，
+  每个风格内部还有随机变体，同一个名字能生成海量不同观感。
+- **风格可指定、可自动**：`style: "auto"` 让名字自己决定风格，
+  你也可以固定任意一种风格。
+- **背景可选**：无（透明）、圆形、方形、圆角方四种底衬，直接可用；
+  另有暗色模式适配深色 UI。
+- **任意尺寸**：输出 `size` 属性控制像素大小，几何永远不缩放变形。
+- **框架无关**：输出是纯 SVG 字符串，React / Vue / 小程序 / SSR 通吃，
+  也可转成 `data:` URI 直接塞进 `<img src>`。
+- **可复现可测试**：不依赖时间、随机数、网络，服务端与客户端渲染逐字节一致。
+
+> **在线体验**：[Demo 调试器](https://tappypotato.github.io/GemAvatar/demo.html) ·
+> [自动化测试页](https://tappypotato.github.io/GemAvatar/test.html)
 > （首次使用请在仓库 Settings → Pages 启用 main 分支，链接即可访问）
 
+## 快速开始
+
+仓库里只需要引入这一个文件：
+
+```
+gem-avatar.js   ← 唯一需要的文件（约 25 KB，gzip 约 6.8 KB）
+demo.html       ← 可选：在线调试器（8 风格即时切换）
+test.html       ← 可选：自动化测试页（13 项断言 + 视觉矩阵）
+```
+
+### 浏览器引入
+
+```html
+<script src="./gem-avatar.js"></script>
+<script>
+  // 全局变量 gemAvatar 直接可用
+  document.body.innerHTML = gemAvatar(user.id, { style: "pixel", size: 48 });
+</script>
+```
+
+### Node / CommonJS 引入
+
 ```js
-gemAvatar("alain@example.com")                       // 默认 snowflake 风格
-gemAvatar("alain@example.com", { style: "robot" })   // 指定风格
-gemAvatar("alain@example.com", { style: "auto" })    // 由名字决定风格
+const gemAvatar = require("./gem-avatar.js");
+// 转成 data URI，塞进 <img> 或 CSS background
+el.style.backgroundImage = `url("${gemAvatar.uri(user.id, { style: "robot" })}")`;
+```
+
+## 调用方式
+
+### 1. 基础调用
+
+```js
+gemAvatar("alain")                     // 默认风格（snowflake），无背景
+gemAvatar("alain@example.com")         // 任意字符串都行，邮箱、ID、中文名均可
 // => '<svg xmlns="..." viewBox="0 0 100 100">…</svg>'
 ```
+
+### 2. 指定风格（分类）
+
+```js
+gemAvatar("alain", { style: "robot" })    // 固定用机器人风格
+gemAvatar("alain", { style: "emoji" })    // 固定用表情风格
+```
+
+8 种风格见下方风格表。`style` 缺省为 `snowflake`；未知风格名自动回退
+`snowflake`。
+
+### 3. 随机风格（由名字决定）
+
+```js
+gemAvatar("alain", { style: "auto" })   // 同一名字永远选同一种风格
+```
+
+`"auto"` 不是真随机：风格由名字哈希决定，所以同一个用户每次看到的
+都是同一个风格，但不同用户会分到不同风格，观感丰富又不乱跳。
+
+### 4. 背景（有无底色）
+
+```js
+gemAvatar("alain")                                        // 无（透明背景）
+gemAvatar("alain", { background: "circle" })              // 圆形
+gemAvatar("alain", { background: "square" })              // 方形
+gemAvatar("alain", { background: "squircle" })            // 圆角方
+gemAvatar("alain", { background: "circle", dark: true })  // 圆形 + 暗色模式
+```
+
+### 5. 尺寸
+
+```js
+gemAvatar("alain", { size: 48 })   // 输出 width="48" height="48"
+```
+
+不传 `size` 时 SVG 不带宽高属性，尺寸完全由 CSS 决定。
+
+### 6. 色相锁定
+
+```js
+gemAvatar("alain", { hue: 210 })   // 锁住颜色，名字只决定形状
+```
+
+缺省时色相由名字决定（`0–360°`）。
+
+### 7. 转成图片 / 背景
+
+```js
+gemAvatar.uri("alain", { style: "robot", background: "circle" })
+// => "data:image/svg+xml;utf8,%3Csvg…"
+
+<img src={gemAvatar.uri(user.id)} />                          // React
+document.querySelector("img").src = gemAvatar.uri(user.id);    // 原生
+el.style.backgroundImage = `url("${gemAvatar.uri(user.id)}")`; // CSS
+```
+
+### 8. 高级：锁定细节（overrides）
+
+固定任一内部参数在 0–1 位置，名字仍决定其余一切：
+
+```js
+gemAvatar("alain", { style: "plant", overrides: { "pl.type": 0.5 } })
+```
+
+## 选项一览
+
+| 选项 | 类型 | 默认 | 说明 |
+|---|---|---|---|
+| `style` | 风格 key 或 `"auto"` | `"snowflake"` | 视觉风格，未知值回退默认 |
+| `size` | number | 由 CSS 决定 | 输出 `width`/`height` 属性（px） |
+| `hue` | number | 由名字决定 | 锁定色相 0–360°，名字只决定形状 |
+| `background` | `"circle"`/`"square"`/`"squircle"` | 无（透明） | 底衬形状 |
+| `dark` | boolean | `false` | 暗色模式（更深的底色与描边） |
+| `pixel` | number | 由名字决定 | （pixel 风格）锁定网格 9/11 |
+| `overrides` | object | — | 固定任一 trait 的 0–1 位置，如 `{ "pl.type": 0.5 }` |
+| `title` | string | — | 无障碍 `<title>` |
 
 ## 8 种风格
 
 | style | 说明 | 视觉关键词 |
 |---|---|---|
 | `snowflake` | 六角雪花：臂长 / 分支数 / 中心大小 / 星点随名字 | 冰晶、对称、清新 |
-| `plant` | 盆栽植物：仙人掌（带手臂/花/笑脸）/ 大叶 / 嫩芽三种变体 | 可爱、治愈、自然 |
+| `plant` | 盆栽植物：仙人掌（手臂/花/笑脸）/ 大叶 / 嫩芽三种变体 | 可爱、治愈、自然 |
 | `pixel` | 对称像素人脸：9/11 网格，发型 / 眼行 / 嘴宽随名字 | 复古、游戏、像素 |
 | `line` | 极简线条脸：轮廓 + 发丝 + 点眼 + 表情 | 手绘、极简、线条 |
 | `geo` | 低多边形脸：碎块拼接 + 顶部发块 | 低多边形、棱角、抽象 |
@@ -28,42 +162,9 @@ gemAvatar("alain@example.com", { style: "auto" })    // 由名字决定风格
 | `emoji` | 圆脸表情：5 种种子化表情 + 腮红 | 表情、情绪、圆润 |
 | `silhouette` | 负空间剪影：头 + 发 + 肩，五官镂空 | 剪影、深邃、简洁 |
 
-`style: "auto"` 时名字自己决定风格（同一名字永远选同一种）。
-
-## 用法
-
-浏览器（全局 `gemAvatar`）：
-
-```html
-<script src="./gem-avatar.js"></script>
-<script>
-  document.body.innerHTML = gemAvatar(user.id, { style: "pixel", size: 48 });
-</script>
-```
-
-Node / CommonJS：
-
-```js
-const gemAvatar = require("./gem-avatar.js");
-el.style.backgroundImage = `url("${gemAvatar.uri(user.id, { style: "robot" })}")`;
-```
-
-`gemAvatar.uri(name, opts)` 返回 `data:image/svg+xml` URI，可直接给
-`<img src>` 或 `background-image`。输出是纯 SVG 字符串，天然适配
-React / Vue / 小程序 / 服务端渲染，无需框架适配层。
-
-## 选项
-
-| 选项 | 类型 | 默认 | 说明 |
-|---|---|---|---|
-| `style` | 见上方风格表，或 `auto` | `snowflake` | 视觉风格 |
-| `size` | number | 由 CSS 决定 | 输出 `width`/`height` 属性（px） |
-| `hue` | number | 由名字决定 | 锁定色相 0–360°，名字只决定形状 |
-| `pixel` | number | 由名字决定 | （pixel 风格）锁定网格 9/11 |
-| `overrides` | object | — | 固定任一 trait 的 0–1 位置，如 `{ "pl.type": 0.5 }` |
-| `background` | `"circle"`/`"square"`/`"squircle"` | 无（透明） | 底衬 |
-| `dark` | boolean | false | 暗色模式 |
-| `title` | string | — | 无障碍 `<title>` |
+每个风格内部还有大量随机变体：植物有 3 种形态 × 手臂/花/笑脸有无，
+雪花有臂长/分支/星点组合，机器人有天线/眼型/格栅组合……同一风格下
+不同名字仍能保证观感互不相同（1000 名字零碰撞）。
 
 ## 架构
 
