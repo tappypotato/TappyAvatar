@@ -1,0 +1,14 @@
+# macOS
+.DS_Store
+
+# 编辑器
+.vscode/
+.idea/
+
+# 临时
+*.log
+*.tmp
+npm-debug.log
+
+# 缓存
+.cache/
