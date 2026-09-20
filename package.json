@@ -1,0 +1,46 @@
+{
+  "name": "tappy-avatar",
+  "version": "1.8.0",
+  "description": "Deterministic SVG avatar generator — the same string always renders the same avatar. Fast (~3 µs), tiny (~6 KB gzipped), zero dependencies, 12 styles, browser & Node.",
+  "keywords": [
+    "avatar",
+    "avatar-generator",
+    "identicon",
+    "identicon-generator",
+    "svg",
+    "svg-avatar",
+    "deterministic",
+    "hash-avatar",
+    "default-avatar",
+    "placeholder",
+    "tiny",
+    "zero-dependency"
+  ],
+  "homepage": "https://avatar.tappypotato.com/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tappypotato/TappyAvatar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tappypotato/TappyAvatar/issues"
+  },
+  "author": "TappyPotato",
+  "license": "MIT",
+  "main": "tappy-avatar.js",
+  "exports": {
+    ".": {
+      "require": "./tappy-avatar.js",
+      "default": "./tappy-avatar.js"
+    }
+  },
+  "files": [
+    "tappy-avatar.js",
+    "README.md",
+    "README.en.md",
+    "docs/README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=12"
+  }
+}
